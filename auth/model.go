@@ -40,6 +40,8 @@ var (
 	ErrEmailIsNotVerifiedCode = "AUTH_0003"
 	ErrBadRequest             = errors.New("Bad request")
 	ErrBadRequestCode         = "AUTH_0004"
+	ErrInactiveUser           = errors.New("User is already deadactivated his/her account")
+	ErrInactiveUserCode       = "AUTH_0005"
 )
 
 var ErrInvalidCredentialsDto = &ErrorDto{
@@ -50,6 +52,16 @@ var ErrInvalidCredentialsDto = &ErrorDto{
 var ErrDuplicateEmailDto = &ErrorDto{
 	Message:   ErrDuplicateEmail.Error(),
 	ErrorCode: ErrDuplicateEmailCode,
+}
+
+var ErrEmailIsNotVerifiedDto = &ErrorDto{
+	Message:   ErrEmailIsNotVerified.Error(),
+	ErrorCode: ErrEmailIsNotVerifiedCode,
+}
+
+var ErrInactiveUserDto = &ErrorDto{
+	Message:   ErrInactiveUser.Error(),
+	ErrorCode: ErrInactiveUserCode,
 }
 
 var ErrBadRequestDto = &ErrorDto{

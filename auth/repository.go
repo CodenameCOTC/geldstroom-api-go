@@ -57,3 +57,19 @@ func (adb *Authhentication) Authenticate(credentials Credentials) (int, error) {
 
 	return id, nil
 }
+
+func (adb *Authhentication) Get(id int) (*UserModel, error) {
+	u := &UserModel{}
+
+	stmt := `SELECT id, email, isActive, joinDate, lastActivity, isEmailVerified FROM user where id = ?`
+
+	err := adb.Db.QueryRow(stmt, id).Scan(&u.ID, &u.Email, &u.IsActive, &u.JoinDate, &u.LastActivity, &u.IsEmailVerified)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrInvalidCredentials
+		}
+		return nil, err
+	}
+
+	return u, nil
+}

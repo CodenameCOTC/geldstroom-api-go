@@ -25,4 +25,5 @@ func (r Router) Init() {
 		authRoutes.POST("/login", auth.Login)
 		authRoutes.POST("/register", auth.Register)
 	}
+
 }
