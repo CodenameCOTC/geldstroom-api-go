@@ -16,14 +16,14 @@ func (adb *AuthDb) Insert(email, password string) error {
 		return err
 	}
 
-	stmt := `INSERT INTO user (email, password, isActive, joinDate, lastActivity) VALUES(?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())`
+	stmt := `INSERT INTO user (email, password, isActive, joinDate, lastActivity) VALUES(?, ?, TRUE, UTC_TIMESTAMP(), UTC_TIMESTAMP())`
 
 	_, err = adb.Db.Exec(stmt, email, string(hashedPassword))
 
 	if err != nil {
 		var mySQLError *mysql.MySQLError
 		if errors.As(err, &mySQLError) {
-			if mySQLError.Number == 1062 && strings.Contains(mySQLError.Message, "user_uc_email") {
+			if mySQLError.Number == 1062 && strings.Contains(mySQLError.Message, "email") {
 				return ErrDuplicateEmail
 			}
 		}
@@ -47,7 +47,7 @@ func (adb *AuthDb) Authenticate(crendetials Credentials) (int, error) {
 		return 0, err
 	}
 
-	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(crendetials.Email))
+	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(crendetials.Password))
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
 			return 0, ErrInvalidCredentials

@@ -8,14 +8,16 @@ import (
 )
 
 type Router struct {
-	DB *sql.DB
-	R  *gin.Engine
+	DB     *sql.DB
+	R      *gin.Engine
+	Secret string
 }
 
 // Initializing routes
 func (r Router) Init() {
 	auth := &auth.AuthDb{
-		Db: r.DB,
+		Db:     r.DB,
+		Secret: r.Secret,
 	}
 
 	authRoutes := r.R.Group("/auth")

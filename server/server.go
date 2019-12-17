@@ -29,7 +29,7 @@ func (s Server) Start() {
 
 	defer db.Close()
 
-	route := &router.Router{DB: db, R: r}
+	route := &router.Router{DB: db, R: r, Secret: s.Secret}
 
 	route.Init()
 

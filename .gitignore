@@ -23,4 +23,7 @@
 /vendor/
 /Godeps/
 
+# Build
+geldstroom-api-go
+
 # End of https://www.gitignore.io/api/go

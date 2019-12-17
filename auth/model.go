@@ -21,7 +21,8 @@ type Credentials struct {
 }
 
 type AuthDb struct {
-	Db *sql.DB
+	Db     *sql.DB
+	Secret string
 }
 
 type ErrorDto struct {
