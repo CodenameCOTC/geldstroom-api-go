@@ -9,7 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (adb *AuthDb) Insert(email, password string) error {
+func (adb *Authhentication) Insert(email, password string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 
 	if err != nil {
@@ -33,7 +33,7 @@ func (adb *AuthDb) Insert(email, password string) error {
 	return nil
 }
 
-func (adb *AuthDb) Authenticate(credentials Credentials) (int, error) {
+func (adb *Authhentication) Authenticate(credentials Credentials) (int, error) {
 	var id int
 	var hashedPassword []byte
 

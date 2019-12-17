@@ -15,7 +15,7 @@ type Router struct {
 
 // Initializing routes
 func (r Router) Init() {
-	auth := &auth.AuthDb{
+	auth := &auth.Authhentication{
 		Db:     r.DB,
 		Secret: r.Secret,
 	}

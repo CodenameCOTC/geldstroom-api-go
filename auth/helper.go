@@ -6,7 +6,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-func (adb *AuthDb) SignToken(id int, email string) (string, error) {
+func (adb *Authhentication) SignToken(id int, email string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, &jwt.MapClaims{
 		"id":    id,

@@ -20,7 +20,7 @@ type Credentials struct {
 	Password string `form:"password"  binding:"required"`
 }
 
-type AuthDb struct {
+type Authhentication struct {
 	Db     *sql.DB
 	Secret string
 }

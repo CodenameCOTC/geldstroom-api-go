@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (adb *AuthDb) Login(c *gin.Context) {
+func (adb *Authhentication) Login(c *gin.Context) {
 	var credentials Credentials
 
 	if err := c.ShouldBind(&credentials); err != nil {
@@ -41,7 +41,7 @@ func (adb *AuthDb) Login(c *gin.Context) {
 	})
 }
 
-func (adb *AuthDb) Register(c *gin.Context) {
+func (adb *Authhentication) Register(c *gin.Context) {
 	var credentials Credentials
 
 	if err := c.ShouldBind(&credentials); err != nil {
