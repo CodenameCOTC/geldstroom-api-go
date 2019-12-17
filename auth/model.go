@@ -7,12 +7,13 @@ import (
 )
 
 type UserModel struct {
-	ID           int
-	Email        string
-	Password     string
-	isActive     bool
-	joinDate     time.Time
-	lastActivity time.Time
+	ID              int       `json:"id"`
+	Email           string    `json:"email"`
+	Password        string    `json:"password"`
+	IsActive        bool      `json:"isActive"`
+	JoinDate        time.Time `json:"joinDate"`
+	LastActivity    time.Time `json:"lastActivity"`
+	IsEmailVerified bool      `json:"isEmailVerified"`
 }
 
 type Credentials struct {
