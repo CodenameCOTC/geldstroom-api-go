@@ -11,10 +11,10 @@ import (
 	"github.com/novaladip/geldstroom-api-go/auth"
 )
 
-func (adb *AuthDb) AuthGuard() gin.HandlerFunc {
+func (g *Guard) AuthGuard() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var authHeader AuthHeader
-		authentication := auth.Authhentication{Db: adb.Db, Secret: ""}
+		authentication := auth.Authhentication{Db: g.Db, Secret: ""}
 
 		c.BindHeader(&authHeader)
 
@@ -33,12 +33,16 @@ func (adb *AuthDb) AuthGuard() gin.HandlerFunc {
 				return nil, auth.ErrInvalidCredentials
 			}
 
-			return []byte("s6Ndh+pPbnzHbS*+9Pk8qGWhTzbpa@ge"), nil
+			return []byte(g.Secret), nil
 		})
+
+		if !token.Valid {
+			c.AbortWithStatusJSON(401, auth.ErrInvalidCredentialsDto)
+		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 
-		if !ok || !token.Valid {
+		if !ok {
 			c.AbortWithStatusJSON(401, auth.ErrInvalidCredentialsDto)
 		}
 
@@ -53,6 +57,11 @@ func (adb *AuthDb) AuthGuard() gin.HandlerFunc {
 				"message": "Internal Server Error",
 			})
 		}
+
+		c.Set("JwtPayload", auth.JwtPayload{
+			Id:    u.ID,
+			Email: u.Email,
+		})
 
 		if !u.IsActive {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, auth.ErrInactiveUserDto)

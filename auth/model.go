@@ -16,6 +16,11 @@ type UserModel struct {
 	IsEmailVerified bool      `json:"isEmailVerified"`
 }
 
+type JwtPayload struct {
+	Id    int    `json:"id"`
+	Email string `json:"email"`
+}
+
 type Credentials struct {
 	Email    string `form:"email" binding:"required"`
 	Password string `form:"password"  binding:"required"`
