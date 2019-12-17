@@ -33,12 +33,12 @@ func (adb *AuthDb) Insert(email, password string) error {
 	return nil
 }
 
-func (adb *AuthDb) Authenticate(crendetials Credentials) (int, error) {
+func (adb *AuthDb) Authenticate(credentials Credentials) (int, error) {
 	var id int
 	var hashedPassword []byte
 
 	stmt := "SELECT id, password FROM user where email = ? AND isActive = TRUE"
-	row := adb.Db.QueryRow(stmt, crendetials.Email)
+	row := adb.Db.QueryRow(stmt, credentials.Email)
 	err := row.Scan(&id, &hashedPassword)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -47,7 +47,7 @@ func (adb *AuthDb) Authenticate(crendetials Credentials) (int, error) {
 		return 0, err
 	}
 
-	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(crendetials.Password))
+	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(credentials.Password))
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
 			return 0, ErrInvalidCredentials
