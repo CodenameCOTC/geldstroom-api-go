@@ -9,6 +9,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/novaladip/geldstroom-api-go/auth"
+	"github.com/novaladip/geldstroom-api-go/helper"
 )
 
 func (g *Guard) AuthGuard() gin.HandlerFunc {
@@ -19,9 +20,8 @@ func (g *Guard) AuthGuard() gin.HandlerFunc {
 		c.BindHeader(&authHeader)
 
 		if strings.TrimSpace(authHeader.Authorization) == "" {
-			c.AbortWithStatusJSON(401, gin.H{
-				"message": "token not found",
-			})
+			c.AbortWithStatusJSON(401, &helper.Unauthorized)
+			return
 		}
 
 		tokenString := strings.Replace(authHeader.Authorization, "Bearer ", "", -1)
@@ -37,13 +37,15 @@ func (g *Guard) AuthGuard() gin.HandlerFunc {
 		})
 
 		if !token.Valid {
-			c.AbortWithStatusJSON(401, auth.ErrInvalidCredentialsDto)
+			c.AbortWithStatusJSON(401, &helper.Unauthorized)
+			return
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 
 		if !ok {
-			c.AbortWithStatusJSON(401, auth.ErrInvalidCredentialsDto)
+			c.AbortWithStatusJSON(401, &helper.Unauthorized)
+			return
 		}
 
 		userId := int(claims["id"].(float64))
@@ -51,11 +53,11 @@ func (g *Guard) AuthGuard() gin.HandlerFunc {
 		u, err := authentication.Get(userId)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				c.AbortWithStatusJSON(401, auth.ErrInvalidCredentialsDto)
+				c.AbortWithStatusJSON(401, &helper.Unauthorized)
+				return
 			}
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"message": "Internal Server Error",
-			})
+			c.AbortWithStatusJSON(http.StatusInternalServerError, &helper.InternalServerError)
+			return
 		}
 
 		c.Set("JwtPayload", auth.JwtPayload{
@@ -64,11 +66,13 @@ func (g *Guard) AuthGuard() gin.HandlerFunc {
 		})
 
 		if !u.IsActive {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, auth.ErrInactiveUserDto)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, &auth.ErrInactiveUserDto)
+			return
 		}
 
 		if !u.IsEmailVerified {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, auth.ErrEmailIsNotVerifiedDto)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, &auth.ErrEmailIsNotVerifiedDto)
+			return
 		}
 
 		c.Next()
