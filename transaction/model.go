@@ -23,6 +23,13 @@ type InsertDto struct {
 	Type        string `form:"type"`
 }
 
+type updateDto struct {
+	Amount      int64  `form:"amount"`
+	Description string `form:"description"`
+	Category    string `form:"category"`
+	Type        string `form:"type"`
+}
+
 var (
 	errInsert     = errors.New("Insert failure")
 	errInsertCode = "TRANSACTION_001"

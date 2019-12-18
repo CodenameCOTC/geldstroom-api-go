@@ -17,10 +17,7 @@ func (h *Handler) Create(c *gin.Context) {
 	var dto InsertDto
 	user, _ := c.MustGet("JwtPayload").(auth.JwtPayload)
 
-	if err := c.ShouldBind(&dto); err != nil {
-		c.JSON(http.StatusBadRequest, helper.Unauthorized)
-		return
-	}
+	c.ShouldBind(&dto)
 
 	vid := newValidateInsertDto(&dto)
 
@@ -62,6 +59,29 @@ func (h *Handler) GetTransactions(c *gin.Context) {
 
 }
 
-func (h *Handler) Update(c *gin.Context) {}
+func (h *Handler) Update(c *gin.Context) {
+	user, _ := c.MustGet("JwtPayload").(auth.JwtPayload)
+	tId := c.Param("id")
+	var dto updateDto
+	c.ShouldBind(&dto)
+	vud := newValidateUpdateDto(&dto)
+
+	if ok := vud.validate(); !ok {
+		c.JSON(http.StatusBadRequest, &helper.ErrorResponse{
+			Message:   "Field Error",
+			ErrorCode: "TRANSACTION_0002",
+			Error:     vud.error,
+		})
+		return
+	}
+
+	t, err := h.update(tId, dto, user.Id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, t)
+}
 
 func (h *Handler) Delete(c *gin.Context) {}

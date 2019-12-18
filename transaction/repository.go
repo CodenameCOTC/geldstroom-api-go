@@ -1,5 +1,7 @@
 package transaction
 
+import "strconv"
+
 func (h *Handler) insert(dto InsertDto, userId int) (*TransactionModel, error) {
 	stmt := `INSERT INTO transaction (amount, description, category, type, userId) VALUE(?, ?, ?, ?, ?)`
 	result, err := h.Db.Exec(stmt, dto.Amount, dto.Description, dto.Category, dto.Type, userId)
@@ -71,4 +73,21 @@ func (h *Handler) getTransaction(userId *int) ([]*TransactionModel, error) {
 	}
 
 	return transactions, nil
+}
+
+func (h *Handler) update(tId string, dto updateDto, userId int) (*TransactionModel, error) {
+	stmt := `UPDATE transaction SET amount=?, category=?, type=?, description=? WHERE userId = ? AND id= ?`
+	_, err := h.Db.Exec(stmt, dto.Amount, dto.Category, dto.Type, dto.Description, userId, tId)
+	if err != nil {
+		return nil, err
+	}
+
+	id, _ := strconv.ParseInt(tId, 10, 64)
+
+	t, err := h.get(id, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	return t, nil
 }
