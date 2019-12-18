@@ -1,6 +1,9 @@
 package transaction
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 type TransactionModel struct {
 	Id          int       `json:"id"`
@@ -12,3 +15,15 @@ type TransactionModel struct {
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
+
+type InsertDto struct {
+	Amount      int64  `form:"amount"`
+	Description string `form:"description"`
+	Category    string `form:"category"`
+	Type        string `form:"type"`
+}
+
+var (
+	errInsert     = errors.New("Insert failure")
+	errInsertCode = "TRANSACTION_001"
+)

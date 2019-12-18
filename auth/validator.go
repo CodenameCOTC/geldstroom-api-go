@@ -20,7 +20,7 @@ func newCredentialsValidator(c *Credentials) credentialsValidator {
 }
 
 func (cv *credentialsValidator) validate() bool {
-	if emailRX.MatchString(cv.Credentials.Email) {
+	if !emailRX.MatchString(cv.Credentials.Email) {
 		cv.error["email"] = "Invalid email address"
 	}
 

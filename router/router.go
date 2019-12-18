@@ -17,26 +17,33 @@ type Router struct {
 
 // Initializing routes
 func (r Router) Init() {
-	auth := &auth.Authhentication{
+
+	transactionHandler := &transaction.Handler{
+		Db: r.DB,
+	}
+
+	guard := &middleware.Guard{
 		Db:     r.DB,
 		Secret: r.Secret,
 	}
 
-	middlewareGuard := &middleware.Guard{
+	authHandler := &auth.Authhentication{
 		Db:     r.DB,
 		Secret: r.Secret,
 	}
-
 	authRoutes := r.R.Group("/auth")
 	{
-		authRoutes.POST("/login", auth.Login)
-		authRoutes.POST("/register", auth.Register)
+		authRoutes.POST("/login", authHandler.Login)
+		authRoutes.POST("/register", authHandler.Register)
 	}
 
 	transactionRoutes := r.R.Group("/transaction")
-	transactionRoutes.Use(middlewareGuard.AuthGuard())
+	transactionRoutes.Use(guard.AuthGuard())
 	{
-		transactionRoutes.GET("/", transaction.GetTransactions)
+		transactionRoutes.GET("/", transactionHandler.GetTransactions)
+		transactionRoutes.POST("/", transactionHandler.Create)
+		transactionRoutes.PUT("/:id", transactionHandler.Update)
+		transactionRoutes.DELETE("/:id", transactionHandler.Delete)
 	}
 
 }
