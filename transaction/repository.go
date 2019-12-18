@@ -2,7 +2,9 @@ package transaction
 
 import "strconv"
 
-func (h *Handler) insert(dto InsertDto, userId int) (*TransactionModel, error) {
+import "github.com/novaladip/geldstroom-api-go/helper"
+
+func (h *Handler) insert(dto insertDto, userId int) (*TransactionModel, error) {
 	stmt := `INSERT INTO transaction (amount, description, category, type, userId) VALUE(?, ?, ?, ?, ?)`
 	result, err := h.Db.Exec(stmt, dto.Amount, dto.Description, dto.Category, dto.Type, userId)
 
@@ -90,4 +92,23 @@ func (h *Handler) update(tId string, dto updateDto, userId int) (*TransactionMod
 	}
 
 	return t, nil
+}
+
+func (h *Handler) delete(tId string, userId int) error {
+	stmt := `DELETE FROM transaction where id = ? AND userId = ?`
+	result, err := h.Db.Exec(stmt, tId, userId)
+	if err != nil {
+		return err
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return helper.ErrSqlNoRow
+	}
+
+	return nil
 }

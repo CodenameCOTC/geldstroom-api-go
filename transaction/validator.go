@@ -3,11 +3,11 @@ package transaction
 import "strings"
 
 type validateInsertDto struct {
-	dto   InsertDto
+	dto   insertDto
 	error map[string]string
 }
 
-func newValidateInsertDto(dto *InsertDto) *validateInsertDto {
+func newValidateInsertDto(dto *insertDto) *validateInsertDto {
 	return &validateInsertDto{
 		dto:   *dto,
 		error: make(map[string]string),

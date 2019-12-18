@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,7 @@ type Handler struct {
 }
 
 func (h *Handler) Create(c *gin.Context) {
-	var dto InsertDto
+	var dto insertDto
 	user, _ := c.MustGet("JwtPayload").(auth.JwtPayload)
 
 	c.ShouldBind(&dto)
@@ -84,4 +85,21 @@ func (h *Handler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, t)
 }
 
-func (h *Handler) Delete(c *gin.Context) {}
+func (h *Handler) Delete(c *gin.Context) {
+	user, _ := c.MustGet("JwtPayload").(auth.JwtPayload)
+	tId := c.Param("id")
+
+	if err := h.delete(tId, user.Id); err != nil {
+		if errors.Is(err, helper.ErrSqlNoRow) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "Transaction not found",
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, &helper.InternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusNoContent, gin.H{})
+}

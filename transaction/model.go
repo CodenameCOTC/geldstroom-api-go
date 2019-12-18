@@ -16,7 +16,7 @@ type TransactionModel struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
-type InsertDto struct {
+type insertDto struct {
 	Amount      int64  `form:"amount"`
 	Description string `form:"description"`
 	Category    string `form:"category"`
