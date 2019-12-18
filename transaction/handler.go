@@ -52,7 +52,13 @@ func (h *Handler) GetTransactions(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	t, err := h.getTransaction(&user.Id)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+	}
+
+	c.JSON(http.StatusOK, &t)
 
 }
 

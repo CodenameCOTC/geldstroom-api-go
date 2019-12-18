@@ -44,8 +44,8 @@ func (h *Handler) get(transactionId int64, userId int) (*TransactionModel, error
 	return t, nil
 }
 
-func (h *Handler) getTransaction(userId int) ([]*TransactionModel, error) {
-	stmt := `SELECT * FROM transaction where userId = ? ORDER BY createdAt LIMIT 10`
+func (h *Handler) getTransaction(userId *int) ([]*TransactionModel, error) {
+	stmt := `SELECT * FROM transaction WHERE userId = ? AND createdAt BETWEEN date_sub(now(), INTERVAL 1 WEEK) and now() ORDER BY createdAt DESC LIMIT 10`
 	rows, err := h.Db.Query(stmt, userId)
 
 	if err != nil {
