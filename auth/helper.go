@@ -18,8 +18,7 @@ func (adb *Authhentication) SignToken(id int, email string) (string, error) {
 		Email: email,
 		StandardClaims: jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),
-			ExpiresAt: time.Now().Add(time.Second * 60).Unix(),
-			// ExpiresAt: time.Now().AddDate(0, 0, 7).Unix(),
+			ExpiresAt: time.Now().AddDate(0, 0, 7).Unix(),
 		},
 	}
 

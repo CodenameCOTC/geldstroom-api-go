@@ -22,8 +22,8 @@ type JwtPayload struct {
 }
 
 type Credentials struct {
-	Email    string `form:"email" binding:"required"`
-	Password string `form:"password"  binding:"required"`
+	Email    string `form:"email"`
+	Password string `form:"password"`
 }
 
 type Authhentication struct {
@@ -47,6 +47,8 @@ var (
 	ErrBadRequestCode         = "AUTH_0004"
 	ErrInactiveUser           = errors.New("User is already deadactivated his/her account")
 	ErrInactiveUserCode       = "AUTH_0005"
+	ErrFormFieldError         = errors.New("You may type a wrong answer to some field")
+	ErrFormFieldErrorCode     = "AUTH_0006"
 )
 
 var ErrInvalidCredentialsDto = &ErrorDto{

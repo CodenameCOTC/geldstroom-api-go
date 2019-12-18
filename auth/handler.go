@@ -15,6 +15,18 @@ func (adb *Authhentication) Login(c *gin.Context) {
 		return
 	}
 
+	cv := newCredentialsValidator(&credentials)
+
+	ok := cv.validate()
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message":   ErrFormFieldError.Error(),
+			"errorCode": ErrFormFieldErrorCode,
+			"error":     cv.error,
+		})
+		return
+	}
+
 	id, err := adb.Authenticate(credentials)
 
 	if err != nil {
@@ -46,6 +58,17 @@ func (adb *Authhentication) Register(c *gin.Context) {
 
 	if err := c.ShouldBind(&credentials); err != nil {
 		c.JSON(http.StatusBadRequest, ErrBadRequestDto)
+		return
+	}
+
+	cv := newCredentialsValidator(&credentials)
+	ok := cv.validate()
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message":   ErrFormFieldError.Error(),
+			"errorCode": ErrFormFieldErrorCode,
+			"error":     cv.error,
+		})
 		return
 	}
 
