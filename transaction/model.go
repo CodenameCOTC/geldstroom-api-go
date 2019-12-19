@@ -31,6 +31,16 @@ type updateDto struct {
 }
 
 var (
-	errInsert     = errors.New("Insert failure")
-	errInsertCode = "TRANSACTION_001"
+	errInsert                = errors.New("Insert failure")
+	errInsertCode            = "TRANSACTION_0001"
+	errInvalidDateRange      = errors.New("Invalid date range, must be one of DAILY | WEEKLY | MONTHLY")
+	errInvalidDateRangeCode  = "TRANSASCTION_0002"
+	errInvalidDateFormat     = errors.New("Invalid date format | date format must be YYYY-MM-DD")
+	errInvalidDateFormatCode = "TRANSACTION_0003"
+)
+
+var (
+	oneWeekRange  = "WEEKLY"
+	oneDayRange   = "DAILY"
+	oneMonthRange = "MONTHLY"
 )

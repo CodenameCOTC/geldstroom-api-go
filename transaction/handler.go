@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/novaladip/geldstroom-api-go/auth"
@@ -45,12 +46,33 @@ func (h *Handler) Create(c *gin.Context) {
 func (h *Handler) GetTransactions(c *gin.Context) {
 	user, ok := c.MustGet("JwtPayload").(auth.JwtPayload)
 
+	dateRange := strings.ToUpper(c.Query("range"))
+	date := c.Query("date")
+	r, err := getRange(date, dateRange)
+
+	if err != nil {
+		if errors.Is(err, errInvalidDateFormat) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message":   errInvalidDateFormat.Error(),
+				"errorCode": errInvalidDateFormatCode,
+			})
+			return
+		}
+
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message":   errInvalidDateRange.Error(),
+			"errorCode": errInvalidDateRangeCode,
+		})
+		return
+
+	}
+
 	if !ok {
 		c.JSON(http.StatusUnauthorized, user)
 		return
 	}
 
-	t, err := h.getTransaction(&user.Id)
+	t, err := h.getTransaction(&user.Id, r)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
