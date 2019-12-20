@@ -15,6 +15,7 @@ type Handler struct {
 
 func (h *Handler) Login(c *gin.Context) {
 	var credentials Credentials
+	c.ShouldBind(&credentials)
 
 	cv := newCredentialsValidator(&credentials)
 
@@ -48,6 +49,7 @@ func (h *Handler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"token": "Bearer " + token,
 	})
+
 }
 
 func (h *Handler) Register(c *gin.Context) {
