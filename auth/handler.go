@@ -1,13 +1,18 @@
 package auth
 
 import (
+	"database/sql"
 	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (adb *Authhentication) Login(c *gin.Context) {
+type Handler struct {
+	Db *sql.DB
+}
+
+func (h *Handler) Login(c *gin.Context) {
 	var credentials Credentials
 
 	if err := c.ShouldBind(&credentials); err != nil {
@@ -27,7 +32,7 @@ func (adb *Authhentication) Login(c *gin.Context) {
 		return
 	}
 
-	id, err := adb.Authenticate(credentials)
+	id, err := h.Authenticate(credentials)
 
 	if err != nil {
 		if errors.Is(err, ErrInvalidCredentials) {
@@ -40,7 +45,7 @@ func (adb *Authhentication) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := adb.SignToken(id, credentials.Email)
+	token, err := h.SignToken(id, credentials.Email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"message": "Internal Server Error",
@@ -53,7 +58,7 @@ func (adb *Authhentication) Login(c *gin.Context) {
 	})
 }
 
-func (adb *Authhentication) Register(c *gin.Context) {
+func (h *Handler) Register(c *gin.Context) {
 	var credentials Credentials
 
 	if err := c.ShouldBind(&credentials); err != nil {
@@ -72,7 +77,7 @@ func (adb *Authhentication) Register(c *gin.Context) {
 		return
 	}
 
-	err := adb.Insert(credentials.Email, credentials.Password)
+	err := h.Insert(credentials.Email, credentials.Password)
 
 	if err != nil {
 		if errors.Is(err, ErrDuplicateEmail) {

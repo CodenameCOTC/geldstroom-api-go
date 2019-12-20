@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"database/sql"
 	"errors"
 	"time"
 )
@@ -24,11 +23,6 @@ type JwtPayload struct {
 type Credentials struct {
 	Email    string `form:"email"`
 	Password string `form:"password"`
-}
-
-type Authhentication struct {
-	Db     *sql.DB
-	Secret string
 }
 
 type ErrorDto struct {

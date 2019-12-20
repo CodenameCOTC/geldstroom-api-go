@@ -23,6 +23,8 @@
 /vendor/
 /Godeps/
 
+*.env
+
 # Build
 geldstroom-api-go
 

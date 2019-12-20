@@ -10,31 +10,28 @@ import (
 )
 
 type Router struct {
-	DB     *sql.DB
-	R      *gin.Engine
-	Secret string
+	DB *sql.DB
+	R  *gin.Engine
 }
 
 // Initializing routes
 func (r Router) Init() {
 
-	transactionHandler := &transaction.Handler{
+	guard := &middleware.Guard{
 		Db: r.DB,
 	}
 
-	guard := &middleware.Guard{
-		Db:     r.DB,
-		Secret: r.Secret,
-	}
-
-	authHandler := &auth.Authhentication{
-		Db:     r.DB,
-		Secret: r.Secret,
+	authHandler := &auth.Handler{
+		Db: r.DB,
 	}
 	authRoutes := r.R.Group("/auth")
 	{
 		authRoutes.POST("/login", authHandler.Login)
 		authRoutes.POST("/register", authHandler.Register)
+	}
+
+	transactionHandler := &transaction.Handler{
+		Db: r.DB,
 	}
 
 	transactionRoutes := r.R.Group("/transaction")

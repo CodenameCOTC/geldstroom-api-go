@@ -9,13 +9,15 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/novaladip/geldstroom-api-go/auth"
+	"github.com/novaladip/geldstroom-api-go/config"
 	"github.com/novaladip/geldstroom-api-go/helper"
 )
 
 func (g *Guard) AuthGuard() gin.HandlerFunc {
+	key := config.GetKey()
 	return func(c *gin.Context) {
 		var authHeader AuthHeader
-		authentication := auth.Authhentication{Db: g.Db, Secret: ""}
+		authentication := auth.Handler{Db: g.Db}
 
 		c.BindHeader(&authHeader)
 
@@ -33,7 +35,7 @@ func (g *Guard) AuthGuard() gin.HandlerFunc {
 				return nil, auth.ErrInvalidCredentials
 			}
 
-			return []byte(g.Secret), nil
+			return []byte(key.SECRET), nil
 		})
 
 		if !token.Valid {

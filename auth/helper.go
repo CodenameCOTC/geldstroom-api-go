@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/novaladip/geldstroom-api-go/config"
 )
 
 type Claims struct {
@@ -12,7 +13,8 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-func (adb *Authhentication) SignToken(id int, email string) (string, error) {
+func (h *Handler) SignToken(id int, email string) (string, error) {
+	key := config.GetKey()
 	claims := &Claims{
 		Id:    id,
 		Email: email,
@@ -24,7 +26,7 @@ func (adb *Authhentication) SignToken(id int, email string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 
-	tokenString, err := token.SignedString([]byte(adb.Secret))
+	tokenString, err := token.SignedString([]byte(key.SECRET))
 	if err != nil {
 		return "", err
 	}
