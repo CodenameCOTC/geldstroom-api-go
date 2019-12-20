@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/novaladip/geldstroom-api-go/helper"
 )
 
 type Handler struct {
@@ -14,11 +15,6 @@ type Handler struct {
 
 func (h *Handler) Login(c *gin.Context) {
 	var credentials Credentials
-
-	if err := c.ShouldBind(&credentials); err != nil {
-		c.JSON(http.StatusBadRequest, ErrBadRequestDto)
-		return
-	}
 
 	cv := newCredentialsValidator(&credentials)
 
@@ -39,32 +35,23 @@ func (h *Handler) Login(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, ErrInvalidCredentialsDto)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Internal Server Error",
-		})
+		helper.ServerError(c, err)
 		return
 	}
 
 	token, err := h.SignToken(id, credentials.Email)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Internal Server Error",
-		})
+		helper.ServerError(c, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"token": "bearer " + token,
+		"token": "Bearer " + token,
 	})
 }
 
 func (h *Handler) Register(c *gin.Context) {
 	var credentials Credentials
-
-	if err := c.ShouldBind(&credentials); err != nil {
-		c.JSON(http.StatusBadRequest, ErrBadRequestDto)
-		return
-	}
 
 	cv := newCredentialsValidator(&credentials)
 	ok := cv.validate()
@@ -84,9 +71,7 @@ func (h *Handler) Register(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, ErrDuplicateEmailDto)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "Internal Server Error",
-		})
+		helper.ServerError(c, err)
 		return
 	}
 

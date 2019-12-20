@@ -1,25 +1,26 @@
 package main
 
 import (
-	"log"
-
 	"github.com/joho/godotenv"
+	"github.com/novaladip/geldstroom-api-go/logger"
 	"github.com/novaladip/geldstroom-api-go/server"
 )
 
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		logger.ErrorLog.Fatal("Error loading .env file")
 	}
 
 	server, db := server.New()
 	defer db.Close()
 
+	logger.InfoLog.Println("Server starting to listen & serve")
+
 	err = server.ListenAndServe()
 
 	if err != nil {
-		log.Fatal(err)
+		logger.ErrorLog.Fatal(err)
 	}
 
 }

@@ -35,7 +35,7 @@ func (h *Handler) Create(c *gin.Context) {
 	t, err := h.insert(dto, user.Id)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, helper.InternalServerError)
+		helper.ServerError(c, err)
 		return
 	}
 
@@ -44,7 +44,7 @@ func (h *Handler) Create(c *gin.Context) {
 }
 
 func (h *Handler) GetTransactions(c *gin.Context) {
-	user, ok := c.MustGet("JwtPayload").(auth.JwtPayload)
+	user, _ := c.MustGet("JwtPayload").(auth.JwtPayload)
 
 	dateRange := strings.ToUpper(c.Query("range"))
 	date := c.Query("date")
@@ -67,15 +67,11 @@ func (h *Handler) GetTransactions(c *gin.Context) {
 
 	}
 
-	if !ok {
-		c.JSON(http.StatusUnauthorized, user)
-		return
-	}
-
 	t, err := h.getTransaction(&user.Id, r)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
+		helper.ServerError(c, err)
+		return
 	}
 
 	c.JSON(http.StatusOK, &t)
@@ -100,7 +96,7 @@ func (h *Handler) Update(c *gin.Context) {
 
 	t, err := h.update(tId, dto, user.Id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
+		helper.ServerError(c, err)
 		return
 	}
 
@@ -119,7 +115,7 @@ func (h *Handler) Delete(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, &helper.InternalServerError)
+		helper.ServerError(c, err)
 		return
 	}
 

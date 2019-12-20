@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/novaladip/geldstroom-api-go/logger"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -13,6 +14,7 @@ func (h *Handler) Insert(email, password string) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 
 	if err != nil {
+		logger.ErrorLog.Println(err)
 		return err
 	}
 
@@ -21,6 +23,7 @@ func (h *Handler) Insert(email, password string) error {
 	_, err = h.Db.Exec(stmt, email, string(hashedPassword))
 
 	if err != nil {
+		logger.ErrorLog.Println(err)
 		var mySQLError *mysql.MySQLError
 		if errors.As(err, &mySQLError) {
 			if mySQLError.Number == 1062 && strings.Contains(mySQLError.Message, "email") {
@@ -41,6 +44,7 @@ func (h *Handler) Authenticate(credentials Credentials) (int, error) {
 	row := h.Db.QueryRow(stmt, credentials.Email)
 	err := row.Scan(&id, &hashedPassword)
 	if err != nil {
+		logger.ErrorLog.Println(err)
 		if errors.Is(err, sql.ErrNoRows) {
 			return 0, ErrInvalidCredentials
 		}
@@ -49,6 +53,7 @@ func (h *Handler) Authenticate(credentials Credentials) (int, error) {
 
 	err = bcrypt.CompareHashAndPassword(hashedPassword, []byte(credentials.Password))
 	if err != nil {
+		logger.ErrorLog.Println(err)
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
 			return 0, ErrInvalidCredentials
 		}
@@ -65,6 +70,7 @@ func (h *Handler) Get(id int) (*UserModel, error) {
 
 	err := h.Db.QueryRow(stmt, id).Scan(&u.ID, &u.Email, &u.IsActive, &u.JoinDate, &u.LastActivity, &u.IsEmailVerified)
 	if err != nil {
+		logger.ErrorLog.Println(err)
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrInvalidCredentials
 		}

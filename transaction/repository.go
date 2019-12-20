@@ -1,8 +1,11 @@
 package transaction
 
-import "strconv"
+import (
+	"strconv"
 
-import "github.com/novaladip/geldstroom-api-go/helper"
+	"github.com/novaladip/geldstroom-api-go/helper"
+	"github.com/novaladip/geldstroom-api-go/logger"
+)
 
 func (h *Handler) insert(dto insertDto, userId int) (*TransactionModel, error) {
 	stmt := `INSERT INTO transaction (amount, description, category, type, userId) VALUE(?, ?, ?, ?, ?)`
@@ -53,6 +56,7 @@ func (h *Handler) getTransaction(userId *int, r *Range) ([]*TransactionModel, er
 	rows, err := h.Db.Query(stmt, userId, r.firstDay, r.lastDay)
 
 	if err != nil {
+		logger.ErrorLog.Println(err)
 		return nil, err
 	}
 
@@ -71,6 +75,7 @@ func (h *Handler) getTransaction(userId *int, r *Range) ([]*TransactionModel, er
 	}
 
 	if err = rows.Err(); err != nil {
+		logger.ErrorLog.Println(err)
 		return nil, err
 	}
 
@@ -81,6 +86,7 @@ func (h *Handler) update(tId string, dto updateDto, userId int) (*TransactionMod
 	stmt := `UPDATE transaction SET amount=?, category=?, type=?, description=? WHERE userId = ? AND id= ?`
 	_, err := h.Db.Exec(stmt, dto.Amount, dto.Category, dto.Type, dto.Description, userId, tId)
 	if err != nil {
+		logger.ErrorLog.Println(err)
 		return nil, err
 	}
 
@@ -88,6 +94,7 @@ func (h *Handler) update(tId string, dto updateDto, userId int) (*TransactionMod
 
 	t, err := h.get(id, userId)
 	if err != nil {
+		logger.ErrorLog.Println(err)
 		return nil, err
 	}
 
@@ -98,11 +105,13 @@ func (h *Handler) delete(tId string, userId int) error {
 	stmt := `DELETE FROM transaction where id = ? AND userId = ?`
 	result, err := h.Db.Exec(stmt, tId, userId)
 	if err != nil {
+		logger.ErrorLog.Println(err)
 		return err
 	}
 
 	affected, err := result.RowsAffected()
 	if err != nil {
+		logger.ErrorLog.Println(err)
 		return err
 	}
 
