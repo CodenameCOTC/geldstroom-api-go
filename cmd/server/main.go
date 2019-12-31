@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/novaladip/geldstroom-api-go/core/config"
+	"github.com/novaladip/geldstroom-api-go/core/user"
 	"github.com/novaladip/geldstroom-api-go/pkg/database"
 )
 
@@ -46,6 +47,10 @@ func main() {
 
 func buildHanlder(db *sql.DB, key *config.Key) http.Handler {
 	router := gin.Default()
+
+	user.RegisterHandler(router,
+		user.NewService(user.NewRepository(db)),
+	)
 
 	return router
 }

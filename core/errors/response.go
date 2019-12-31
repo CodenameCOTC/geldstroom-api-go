@@ -1,6 +1,4 @@
-package errors
-
-import "github.com/gin-gonic/gin"
+package errorsresponse
 
 import "net/http"
 
@@ -15,7 +13,12 @@ type ValidationErrorResponse struct {
 	Error     map[string]string `json:"error"`
 }
 
-func InternalServerError(c *gin.Context, message string) ErrorResponse {
+type BadRequestResponse struct {
+	ErrorCode string `json:"errorCode"`
+	Message   string `json:"message"`
+}
+
+func InternalServerError(message string) ErrorResponse {
 	if message == "" {
 		message = "We encountered an error while processing your request."
 	}
