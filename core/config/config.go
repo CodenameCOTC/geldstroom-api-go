@@ -2,7 +2,7 @@ package config
 
 import "os"
 
-type key struct {
+type Key struct {
 	SENDGRID_KEY string
 	DB_DSN       string
 	ADDR         string
@@ -16,8 +16,8 @@ const (
 	secretKey   = "SECRET"
 )
 
-func GetKey() *key {
-	return &key{
+func GetKey() *Key {
+	return &Key{
 		DB_DSN:       os.Getenv(dbDsnKey),
 		SENDGRID_KEY: os.Getenv(sendgridKey),
 		ADDR:         os.Getenv(addrKey),
