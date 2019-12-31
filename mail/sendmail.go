@@ -22,8 +22,8 @@ func Send(receiver, body string) {
 		logger.ErrorLog.Println(err)
 		fmt.Println(err)
 	} else {
-		fmt.Println(response.StatusCode)
-		fmt.Println(response.Body)
-		fmt.Println(response.Headers)
+		logger.InfoLog.Println(response.StatusCode)
+		logger.InfoLog.Println(response.Body)
+		logger.InfoLog.Println(response.Headers)
 	}
 }

@@ -28,6 +28,8 @@ func (r Router) Init() {
 	{
 		authRoutes.POST("/login", authHandler.Login)
 		authRoutes.POST("/register", authHandler.Register)
+		authRoutes.GET("/verify/email/:token", authHandler.VerifyEmail)
+		authRoutes.POST("/verify/resend/email", authHandler.ResendEmailVerification)
 	}
 
 	transactionHandler := &transaction.Handler{
