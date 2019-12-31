@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/novaladip/geldstroom-api-go/core/entity"
 	errorsresponse "github.com/novaladip/geldstroom-api-go/core/errors"
@@ -14,6 +15,7 @@ import (
 
 type Service interface {
 	Create(c *gin.Context, dto CreateUserDto)
+	Login(c *gin.Context, dto CredentialsDto)
 }
 
 type User struct {
@@ -54,6 +56,33 @@ func (dto CreateUserDto) validate() validator.Validate {
 	return v
 }
 
+type CredentialsDto struct {
+	Email    string `form:"email"`
+	Password string `form:"password"`
+}
+
+func (dto CredentialsDto) validate() validator.Validate {
+	v := validator.New()
+
+	if !validator.EmailRX.MatchString(dto.Email) {
+		v.Error["email"] = "Invalid email address"
+	}
+
+	if strings.TrimSpace(dto.Email) == "" {
+		v.Error["email"] = "Email is cannot be empty"
+	}
+
+	if strings.TrimSpace(dto.Password) == "" {
+		v.Error["password"] = "Password is cannot be empty"
+	}
+
+	if len(v.Error) > 0 {
+		v.IsValid = false
+	}
+
+	return v
+}
+
 type service struct {
 	repo Repository
 }
@@ -63,10 +92,6 @@ func NewService(repo Repository) Service {
 }
 
 func (s service) Create(c *gin.Context, dto CreateUserDto) {
-	if validate := dto.validate(); !validate.IsValid {
-		c.JSON(http.StatusBadRequest, errorsresponse.ValidationError(ErrValidationFailedCode, ErrValidationFailed, validate.Error))
-		return
-	}
 
 	id := entity.GenerateID()
 	now := time.Now()
@@ -96,4 +121,48 @@ func (s service) Create(c *gin.Context, dto CreateUserDto) {
 
 	c.JSON(http.StatusCreated, user.GetWithoutPassword())
 	return
+}
+
+func (s service) Login(c *gin.Context, dto CredentialsDto) {
+	user, err := s.repo.FindOneByEmail(dto.Email)
+
+	if err != nil {
+		if errors.Is(err, ErrInvalidCredentials) {
+			c.JSON(http.StatusBadRequest, errorsresponse.BadRequestResponse{
+				ErrorCode: ErrInvalidCredentialsCode,
+				Message:   ErrInvalidCredentials.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
+		return
+	}
+
+	if !user.IsActive {
+		c.JSON(http.StatusBadRequest, gin.H{})
+	}
+
+	if !user.IsEmailVerified {
+		c.JSON(http.StatusBadGateway, errorsresponse.BadRequestResponse{
+			ErrorCode: ErrEmailIsNotVerifiedCode,
+			Message:   ErrEmailIsNotVerified.Error(),
+		})
+		return
+	}
+
+	token, err := s.generateJWT(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
+	}
+
+	c.JSON(http.StatusOK, gin.H{"Bearer": token})
+	return
+}
+
+func (s service) generateJWT(user entity.User) (string, error) {
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":    user.Id,
+		"email": user.Email,
+		"exp":   time.Now().Add(time.Hour * 240).Unix(),
+	}).SignedString([]byte("todo replace with key from .env"))
 }

@@ -12,7 +12,7 @@ import (
 type Repository interface {
 	Create(entity.User) (entity.User, error)
 	// Delete(id string) error
-	// FindOneByEmail(email string) (entity.User, error)
+	FindOneByEmail(email string) (entity.User, error)
 	// FindOneById(id string) (entity.User, error)
 	// VerifyEmail(id string) error
 	// Deactivate(id string) error
@@ -48,4 +48,20 @@ func (r repository) Create(user entity.User) (entity.User, error) {
 	}
 
 	return user.GetWithoutPassword(), nil
+}
+
+func (r repository) FindOneByEmail(email string) (entity.User, error) {
+	var user entity.User
+	stmt := `SELECT * FROM user WHERE email = ?`
+	row := r.DB.QueryRow(stmt, email)
+	err := row.Scan(&user.Id, &user.Email, &user.Password, &user.IsActive, &user.JoinDate, &user.LastActivity, &user.IsEmailVerified)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return user, ErrInvalidCredentials
+		}
+		return user, err
+	}
+
+	return user, nil
 }
