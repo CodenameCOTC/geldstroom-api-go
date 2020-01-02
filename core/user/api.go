@@ -7,6 +7,7 @@ import (
 	errorsresponse "github.com/novaladip/geldstroom-api-go/core/errors"
 )
 
+// RegisterHandler ...
 func RegisterHandler(r *gin.Engine, service Service) {
 	res := resource{service}
 
@@ -23,22 +24,21 @@ type resource struct {
 
 func (r resource) create(c *gin.Context) {
 	var dto CreateUserDto
-	c.ShouldBind(&dto)
+	_ = c.ShouldBind(&dto)
 	if validate := dto.validate(); !validate.IsValid {
 		c.JSON(http.StatusBadRequest, errorsresponse.ValidationError(ErrValidationFailedCode, ErrValidationFailed, validate.Error))
 		return
 	}
 	r.service.Create(c, dto)
-	return
+
 }
 
 func (r resource) login(c *gin.Context) {
 	var dto CredentialsDto
-	c.ShouldBind(&dto)
+	_ = c.ShouldBind(&dto)
 	if validate := dto.validate(); !validate.IsValid {
 		c.JSON(http.StatusBadRequest, errorsresponse.ValidationError(ErrValidationFailedCode, ErrValidationFailed, validate.Error))
 		return
 	}
 	r.service.Login(c, dto)
-	return
 }

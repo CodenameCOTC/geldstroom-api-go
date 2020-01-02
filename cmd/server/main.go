@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/novaladip/geldstroom-api-go/core/config"
+	"github.com/novaladip/geldstroom-api-go/core/transaction"
 	"github.com/novaladip/geldstroom-api-go/core/user"
 	"github.com/novaladip/geldstroom-api-go/pkg/database"
 )
@@ -20,9 +21,9 @@ func main() {
 		log.Fatal("Error load .env file")
 	}
 
-	key := config.GetKey()
+	config.LoadKey()
 
-	db, err := database.OpenDB(key.DB_DSN)
+	db, err := database.OpenDB(config.ConfigKey.DB_DSN)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -30,14 +31,14 @@ func main() {
 	defer db.Close()
 
 	srv := &http.Server{
-		Addr:         key.ADDR,
-		Handler:      buildHanlder(db, key),
+		Addr:         config.ConfigKey.ADDR,
+		Handler:      buildHanlder(db, &config.ConfigKey),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 
-	fmt.Println("Server listening on PORT: " + key.ADDR)
+	fmt.Println("Server listening on PORT: " + config.ConfigKey.ADDR)
 
 	err = srv.ListenAndServe()
 	if err != nil {
@@ -51,6 +52,7 @@ func buildHanlder(db *sql.DB, key *config.Key) http.Handler {
 	user.RegisterHandler(router,
 		user.NewService(user.NewRepository(db)),
 	)
+	transaction.RegisterHandler(router, db)
 
 	return router
 }

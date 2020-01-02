@@ -16,8 +16,10 @@ const (
 	secretKey   = "SECRET"
 )
 
-func GetKey() *Key {
-	return &Key{
+var ConfigKey Key
+
+func LoadKey() {
+	ConfigKey = Key{
 		DB_DSN:       os.Getenv(dbDsnKey),
 		SENDGRID_KEY: os.Getenv(sendgridKey),
 		ADDR:         os.Getenv(addrKey),

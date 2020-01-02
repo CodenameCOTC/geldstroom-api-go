@@ -8,6 +8,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/novaladip/geldstroom-api-go/core/config"
 	"github.com/novaladip/geldstroom-api-go/core/entity"
 	errorsresponse "github.com/novaladip/geldstroom-api-go/core/errors"
 	"github.com/novaladip/geldstroom-api-go/core/validator"
@@ -120,7 +121,7 @@ func (s service) Create(c *gin.Context, dto CreateUserDto) {
 	}
 
 	c.JSON(http.StatusCreated, user.GetWithoutPassword())
-	return
+
 }
 
 func (s service) Login(c *gin.Context, dto CredentialsDto) {
@@ -156,7 +157,7 @@ func (s service) Login(c *gin.Context, dto CredentialsDto) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"Bearer": token})
-	return
+
 }
 
 func (s service) generateJWT(user entity.User) (string, error) {
@@ -164,5 +165,5 @@ func (s service) generateJWT(user entity.User) (string, error) {
 		"id":    user.Id,
 		"email": user.Email,
 		"exp":   time.Now().Add(time.Hour * 240).Unix(),
-	}).SignedString([]byte("todo replace with key from .env"))
+	}).SignedString([]byte(config.ConfigKey.SECRET))
 }
