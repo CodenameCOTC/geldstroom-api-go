@@ -52,7 +52,10 @@ func buildHanlder(db *sql.DB, key *config.Key) http.Handler {
 	user.RegisterHandler(router,
 		user.NewService(user.NewRepository(db)),
 	)
-	transaction.RegisterHandler(router, db)
+	transaction.RegisterHandler(router,
+		db,
+		transaction.NewService(transaction.NewRepository(db)),
+	)
 
 	return router
 }

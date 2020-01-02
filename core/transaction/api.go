@@ -1,26 +1,86 @@
 package transaction
 
-import "github.com/gin-gonic/gin"
+import (
+	"database/sql"
+	"errors"
+	"fmt"
+	"net/http"
+	"strings"
+	"time"
 
-import "net/http"
+	"github.com/gin-gonic/gin"
+	"github.com/novaladip/geldstroom-api-go/core/auth"
+	"github.com/novaladip/geldstroom-api-go/core/entity"
 
-import "github.com/novaladip/geldstroom-api-go/core/auth"
+	errorsresponse "github.com/novaladip/geldstroom-api-go/core/errors"
+)
 
-import "database/sql"
+func RegisterHandler(r *gin.Engine, db *sql.DB, service Service) {
+	res := resource{service}
 
-import "github.com/novaladip/geldstroom-api-go/core/entity"
-
-func RegisterHandler(r *gin.Engine, db *sql.DB) {
 	authMiddleare := auth.NewMiddleware(auth.NewRepository(db))
 
 	transactionRoutes := r.Group("/transaction")
 	transactionRoutes.Use(authMiddleare.AuthGuard())
 	{
-		transactionRoutes.GET("/", get)
+		transactionRoutes.POST("/", res.create)
+		transactionRoutes.GET("/:id", res.findOneById)
 	}
 }
 
-func get(c *gin.Context) {
+type resource struct {
+	service Service
+}
+
+func (r resource) create(c *gin.Context) {
+	var dto CreateDto
+	_ = c.ShouldBind(&dto)
 	user, _ := c.MustGet("JwtPayload").(entity.JwtPayload)
-	c.JSON(http.StatusOK, user)
+
+	validate := dto.Validate()
+
+	if !validate.IsValid {
+		c.JSON(http.StatusBadRequest, errorsresponse.
+			ValidationError(ErrValidationFailedCode,
+				ErrValidationFailed,
+				validate.Error),
+		)
+		return
+	}
+
+	t, err := r.service.Create(entity.Transaction{
+		Id:          entity.GenerateID(),
+		Amount:      dto.Amount,
+		Description: dto.Description,
+		Category:    strings.ToUpper(dto.Category),
+		Type:        strings.ToUpper(dto.Type),
+		UserId:      user.Id,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
+	}
+
+	c.JSON(http.StatusOK, t)
+}
+
+func (r resource) findOneById(c *gin.Context) {
+	user, _ := c.MustGet("JwtPayload").(entity.JwtPayload)
+	tId := c.Param("id")
+
+	t, err := r.service.FindOneById(tId, user.Id)
+	if err != nil {
+		if errors.Is(err, ErrTransactionNotFound) {
+			c.JSON(http.StatusNotFound, errorsresponse.NotFound(fmt.Sprintf("Transaction with ID: %v is not found", tId)))
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
+		return
+	}
+
+	c.JSON(http.StatusOK, t)
+
 }
