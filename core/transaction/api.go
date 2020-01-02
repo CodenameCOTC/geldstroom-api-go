@@ -11,7 +11,7 @@ import "database/sql"
 import "github.com/novaladip/geldstroom-api-go/core/entity"
 
 func RegisterHandler(r *gin.Engine, db *sql.DB) {
-	authMiddleare := auth.NewMiddleware(db, auth.NewRepository(db))
+	authMiddleare := auth.NewMiddleware(auth.NewRepository(db))
 
 	transactionRoutes := r.Group("/transaction")
 	transactionRoutes.Use(authMiddleare.AuthGuard())

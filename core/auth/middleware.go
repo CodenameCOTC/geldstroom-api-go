@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -19,12 +18,11 @@ type Middleware interface {
 }
 
 type authMiddleware struct {
-	DB   *sql.DB
 	repo Repository
 }
 
-func NewMiddleware(db *sql.DB, repo Repository) Middleware {
-	return authMiddleware{db, repo}
+func NewMiddleware(repo Repository) Middleware {
+	return authMiddleware{repo}
 }
 
 type authHeader struct {
