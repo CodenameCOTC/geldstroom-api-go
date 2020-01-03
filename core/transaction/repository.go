@@ -10,6 +10,7 @@ import (
 type Repository interface {
 	Create(t entity.Transaction) (entity.Transaction, error)
 	FindOneById(id string, userId string) (entity.Transaction, error)
+	DeleteOneById(id string, userId string) error
 }
 
 type repository struct {
@@ -54,4 +55,24 @@ func (r repository) FindOneById(id string, userId string) (entity.Transaction, e
 		return t, err
 	}
 	return t, nil
+}
+
+func (r repository) DeleteOneById(id string, userId string) error {
+	stmt := `DELETE FROM transaction WHERE id = ? AND userId = ?`
+	result, err := r.DB.Exec(stmt, id, userId)
+
+	if err != nil {
+		return err
+	}
+
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return ErrTransactionNotFound
+	}
+
+	return nil
 }

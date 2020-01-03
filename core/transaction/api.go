@@ -25,6 +25,7 @@ func RegisterHandler(r *gin.Engine, db *sql.DB, service Service) {
 	{
 		transactionRoutes.POST("/", res.create)
 		transactionRoutes.GET("/:id", res.findOneById)
+		transactionRoutes.DELETE("/:id", res.deleteOneById)
 	}
 }
 
@@ -76,11 +77,27 @@ func (r resource) findOneById(c *gin.Context) {
 			c.JSON(http.StatusNotFound, errorsresponse.NotFound(fmt.Sprintf("Transaction with ID: %v is not found", tId)))
 			return
 		}
-
 		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
 		return
 	}
 
 	c.JSON(http.StatusOK, t)
+}
 
+func (r resource) deleteOneById(c *gin.Context) {
+	user, _ := c.MustGet("JwtPayload").(entity.JwtPayload)
+	tId := c.Param("id")
+
+	if err := r.service.DeleteOneById(tId, user.Id); err != nil {
+		if errors.Is(err, ErrTransactionNotFound) {
+			c.JSON(http.StatusNotFound, errorsresponse.NotFound(fmt.Sprintf("Transaction with ID: %v is not found", tId)))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("Transaction with ID: %v has ben deleted", tId),
+	})
 }
