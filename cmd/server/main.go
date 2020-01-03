@@ -9,9 +9,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/novaladip/geldstroom-api-go/core/config"
 	"github.com/novaladip/geldstroom-api-go/core/transaction"
 	"github.com/novaladip/geldstroom-api-go/core/user"
+	"github.com/novaladip/geldstroom-api-go/pkg/config"
 	"github.com/novaladip/geldstroom-api-go/pkg/database"
 )
 
