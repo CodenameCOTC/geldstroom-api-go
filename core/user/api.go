@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	errorsresponse "github.com/novaladip/geldstroom-api-go/core/errors"
+	errorsresponse "github.com/novaladip/geldstroom-api-go/pkg/errors"
 )
 
 // RegisterHandler ...

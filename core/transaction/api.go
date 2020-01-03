@@ -10,7 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/novaladip/geldstroom-api-go/core/auth"
-	"github.com/novaladip/geldstroom-api-go/core/entity"
+	"github.com/novaladip/geldstroom-api-go/pkg/entity"
 	"github.com/novaladip/geldstroom-api-go/pkg/getrange"
 
 	errorsresponse "github.com/novaladip/geldstroom-api-go/pkg/errors"

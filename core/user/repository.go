@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-sql-driver/mysql"
-	"github.com/novaladip/geldstroom-api-go/core/entity"
+	"github.com/novaladip/geldstroom-api-go/pkg/entity"
 )
 
 type Repository interface {

@@ -8,7 +8,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/novaladip/geldstroom-api-go/core/entity"
+	"github.com/novaladip/geldstroom-api-go/pkg/entity"
 	"github.com/novaladip/geldstroom-api-go/pkg/config"
 	errorsresponse "github.com/novaladip/geldstroom-api-go/pkg/errors"
 )

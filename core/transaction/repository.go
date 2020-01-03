@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/novaladip/geldstroom-api-go/core/entity"
+	"github.com/novaladip/geldstroom-api-go/pkg/entity"
 	"github.com/novaladip/geldstroom-api-go/pkg/getrange"
 )
 

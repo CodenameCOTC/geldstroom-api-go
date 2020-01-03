@@ -1,8 +1,10 @@
 package transaction
 
-import "github.com/novaladip/geldstroom-api-go/core/entity"
+import (
+	"github.com/novaladip/geldstroom-api-go/pkg/entity"
+	"github.com/novaladip/geldstroom-api-go/pkg/getrange"
+)
 
-import "github.com/novaladip/geldstroom-api-go/pkg/getrange"
 
 type Service interface {
 	Create(t entity.Transaction) (entity.Transaction, error)
