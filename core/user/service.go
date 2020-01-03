@@ -11,7 +11,7 @@ import (
 	"github.com/novaladip/geldstroom-api-go/core/config"
 	"github.com/novaladip/geldstroom-api-go/core/entity"
 	errorsresponse "github.com/novaladip/geldstroom-api-go/core/errors"
-	"github.com/novaladip/geldstroom-api-go/core/validator"
+	"github.com/novaladip/geldstroom-api-go/pkg/validator"
 )
 
 type Service interface {

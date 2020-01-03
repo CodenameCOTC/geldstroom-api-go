@@ -3,7 +3,7 @@ package transaction
 import (
 	"strings"
 
-	"github.com/novaladip/geldstroom-api-go/core/validator"
+	"github.com/novaladip/geldstroom-api-go/pkg/validator"
 )
 
 type CreateDto struct {
