@@ -13,7 +13,7 @@ import (
 	"github.com/novaladip/geldstroom-api-go/core/entity"
 	"github.com/novaladip/geldstroom-api-go/pkg/getrange"
 
-	errorsresponse "github.com/novaladip/geldstroom-api-go/core/errors"
+	errorsresponse "github.com/novaladip/geldstroom-api-go/pkg/errors"
 )
 
 func RegisterHandler(r *gin.Engine, db *sql.DB, service Service) {
