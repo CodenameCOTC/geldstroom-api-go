@@ -4,8 +4,9 @@ import "github.com/novaladip/geldstroom-api-go/core/entity"
 
 type Service interface {
 	Create(t entity.Transaction) (entity.Transaction, error)
-	FindOneById(id string, userId string) (entity.Transaction, error)
-	DeleteOneById(id string, userId string) error
+	FindOneById(id, userId string) (entity.Transaction, error)
+	DeleteOneById(id, userId string) error
+	UpdateOneById(id, userId string, dto UpdateDto) (entity.Transaction, error)
 }
 
 type service struct {
@@ -20,10 +21,14 @@ func (s service) Create(t entity.Transaction) (entity.Transaction, error) {
 	return s.repo.Create(t)
 }
 
-func (s service) FindOneById(id string, userId string) (entity.Transaction, error) {
+func (s service) FindOneById(id, userId string) (entity.Transaction, error) {
 	return s.repo.FindOneById(id, userId)
 }
 
-func (s service) DeleteOneById(id string, userId string) error {
+func (s service) DeleteOneById(id, userId string) error {
 	return s.repo.DeleteOneById(id, userId)
+}
+
+func (s service) UpdateOneById(id, userId string, dto UpdateDto) (entity.Transaction, error) {
+	return s.repo.UpdateOneById(id, userId, dto)
 }

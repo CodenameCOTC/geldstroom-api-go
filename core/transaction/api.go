@@ -26,6 +26,7 @@ func RegisterHandler(r *gin.Engine, db *sql.DB, service Service) {
 		transactionRoutes.POST("/", res.create)
 		transactionRoutes.GET("/:id", res.findOneById)
 		transactionRoutes.DELETE("/:id", res.deleteOneById)
+		transactionRoutes.PUT("/:id", res.updateOneById)
 	}
 }
 
@@ -100,4 +101,36 @@ func (r resource) deleteOneById(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": fmt.Sprintf("Transaction with ID: %v has ben deleted", tId),
 	})
+}
+
+func (r resource) updateOneById(c *gin.Context) {
+	var dto UpdateDto
+	user, _ := c.MustGet("JwtPayload").(entity.JwtPayload)
+	tId := c.Param("id")
+
+	_ = c.ShouldBind(&dto)
+
+	validate := dto.Validate()
+	if !validate.IsValid {
+		c.JSON(http.StatusBadRequest, errorsresponse.
+			ValidationError(ErrValidationFailedCode,
+				ErrValidationFailed,
+				validate.Error),
+		)
+		return
+	}
+
+	t, err := r.service.UpdateOneById(tId, user.Id, dto)
+	fmt.Println(err)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.JSON(http.StatusNotFound, errorsresponse.NotFound(fmt.Sprintf("Transaction with ID: %v is not found", tId)))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
+		return
+	}
+
+	c.JSON(http.StatusOK, t)
+
 }

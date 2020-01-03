@@ -9,8 +9,9 @@ import (
 
 type Repository interface {
 	Create(t entity.Transaction) (entity.Transaction, error)
-	FindOneById(id string, userId string) (entity.Transaction, error)
-	DeleteOneById(id string, userId string) error
+	FindOneById(id, userId string) (entity.Transaction, error)
+	DeleteOneById(id, userId string) error
+	UpdateOneById(id, userId string, dto UpdateDto) (entity.Transaction, error)
 }
 
 type repository struct {
@@ -32,7 +33,7 @@ func (r repository) Create(t entity.Transaction) (entity.Transaction, error) {
 	return t, nil
 }
 
-func (r repository) FindOneById(id string, userId string) (entity.Transaction, error) {
+func (r repository) FindOneById(id, userId string) (entity.Transaction, error) {
 	stmt := `SELECT * FROM transaction WHERE id = ? AND userId = ?`
 	row := r.DB.QueryRow(stmt, id, userId)
 	t := entity.Transaction{}
@@ -57,7 +58,7 @@ func (r repository) FindOneById(id string, userId string) (entity.Transaction, e
 	return t, nil
 }
 
-func (r repository) DeleteOneById(id string, userId string) error {
+func (r repository) DeleteOneById(id, userId string) error {
 	stmt := `DELETE FROM transaction WHERE id = ? AND userId = ?`
 	result, err := r.DB.Exec(stmt, id, userId)
 
@@ -75,4 +76,20 @@ func (r repository) DeleteOneById(id string, userId string) error {
 	}
 
 	return nil
+}
+
+func (r repository) UpdateOneById(id, userId string, dto UpdateDto) (entity.Transaction, error) {
+	t := entity.Transaction{}
+	stmt := `UPDATE transaction SET amount=?, category=?, type=?, description=? WHERE userId = ? AND id = ?`
+	_, err := r.DB.Exec(stmt, dto.Amount, dto.Category, dto.Type, dto.Description, userId, id)
+	if err != nil {
+		return t, err
+	}
+
+	t, err = r.FindOneById(id, userId)
+	if err != nil {
+		return t, err
+	}
+
+	return t, nil
 }
