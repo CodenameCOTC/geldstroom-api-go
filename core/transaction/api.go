@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/novaladip/geldstroom-api-go/core/auth"
 	"github.com/novaladip/geldstroom-api-go/core/entity"
+	"github.com/novaladip/geldstroom-api-go/pkg/getrange"
 
 	errorsresponse "github.com/novaladip/geldstroom-api-go/core/errors"
 )
@@ -23,6 +24,7 @@ func RegisterHandler(r *gin.Engine, db *sql.DB, service Service) {
 	transactionRoutes := r.Group("/transaction")
 	transactionRoutes.Use(authMiddleare.AuthGuard())
 	{
+		transactionRoutes.GET("/", res.get)
 		transactionRoutes.POST("/", res.create)
 		transactionRoutes.GET("/:id", res.findOneById)
 		transactionRoutes.DELETE("/:id", res.deleteOneById)
@@ -32,6 +34,26 @@ func RegisterHandler(r *gin.Engine, db *sql.DB, service Service) {
 
 type resource struct {
 	service Service
+}
+
+func (r resource) get(c *gin.Context) {
+	user, _ := c.MustGet("JwtPayload").(entity.JwtPayload)
+	dateRange := strings.ToUpper(c.Query("range"))
+	date := c.Query("date")
+
+	dr, err := getrange.GetRange(date, dateRange)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, errorsresponse.InvalidQuery(ErrInvalidQueryCode, err))
+		return
+	}
+
+	t, err := r.service.Get(*dr, user.Id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
+		return
+	}
+
+	c.JSON(http.StatusOK, t)
 }
 
 func (r resource) create(c *gin.Context) {

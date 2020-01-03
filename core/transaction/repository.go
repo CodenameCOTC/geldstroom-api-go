@@ -5,9 +5,11 @@ import (
 	"errors"
 
 	"github.com/novaladip/geldstroom-api-go/core/entity"
+	"github.com/novaladip/geldstroom-api-go/pkg/getrange"
 )
 
 type Repository interface {
+	Get(dateRange getrange.Range, userId string) ([]entity.Transaction, error)
 	Create(t entity.Transaction) (entity.Transaction, error)
 	FindOneById(id, userId string) (entity.Transaction, error)
 	DeleteOneById(id, userId string) error
@@ -92,4 +94,32 @@ func (r repository) UpdateOneById(id, userId string, dto UpdateDto) (entity.Tran
 	}
 
 	return t, nil
+}
+
+func (r repository) Get(dateRange getrange.Range, userId string) ([]entity.Transaction, error) {
+	stmt := `SELECT * FROM transaction WHERE userId = ? AND createdAt BETWEEN ? AND ? ORDER BY updatedAt DESC LIMIT 10`
+	rows, err := r.DB.Query(stmt, userId, dateRange.FirstDay, dateRange.LastDay)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	transactions := []entity.Transaction{}
+
+	for rows.Next() {
+		t := entity.Transaction{}
+		err = rows.Scan(&t.Id, &t.Amount, &t.Description, &t.Category, &t.Type, &t.UserId, &t.CreatedAt, &t.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		transactions = append(transactions, t)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return transactions, nil
+
 }

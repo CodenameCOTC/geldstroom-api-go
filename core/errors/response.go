@@ -18,6 +18,11 @@ type BadRequestResponse struct {
 	Message   string `json:"message"`
 }
 
+type InvalidQueryResponse struct {
+	ErrorCode string `json:"errorCode"`
+	Message   string `json:"message"`
+}
+
 func InternalServerError(message string) ErrorResponse {
 	if message == "" {
 		message = "We encountered an error while processing your request."
@@ -70,10 +75,9 @@ func Forbidden(message string) ErrorResponse {
 	}
 }
 
-func InvalidQuery(errorCode string, message error, error map[string]string) ValidationErrorResponse {
-	return ValidationErrorResponse{
+func InvalidQuery(errorCode string, message error) InvalidQueryResponse {
+	return InvalidQueryResponse{
 		ErrorCode: errorCode,
 		Message:   message.Error(),
-		Error:     error,
 	}
 }
