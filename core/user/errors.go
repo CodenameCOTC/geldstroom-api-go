@@ -11,4 +11,6 @@ var (
 	ErrInvalidCredentialsCode = "USER_0003"
 	ErrEmailIsNotVerified     = errors.New("Please verify your email first")
 	ErrEmailIsNotVerifiedCode = "USER_0004"
+	ErrUserIsNotActive        = errors.New("User is already deadactivated her/him account")
+	ErrUserIsNotActiveCode    = "USER_0005"
 )

@@ -26,6 +26,13 @@ func (u *User) HashPassword() error {
 	return nil
 }
 
+func (u User) ValidatePassword(p string) bool {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(p)); err != nil {
+		return false
+	}
+	return true
+}
+
 func (u User) GetWithoutPassword() User {
 	u.Password = ""
 	return u

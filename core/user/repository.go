@@ -66,7 +66,6 @@ func (r repository) FindOneByEmail(email string) (entity.User, error) {
 	return user, nil
 }
 
-// FindOneByID ...
 func (r repository) FindOneById(id string) (entity.User, error) {
 	var user entity.User
 	stmt := `SELECT * FROM user where id = ?`
