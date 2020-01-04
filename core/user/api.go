@@ -2,10 +2,12 @@ package user
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/novaladip/geldstroom-api-go/pkg/email"
 	"github.com/novaladip/geldstroom-api-go/pkg/entity"
 	errorsresponse "github.com/novaladip/geldstroom-api-go/pkg/errors"
 )
@@ -55,6 +57,16 @@ func (r resource) create(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
 		return
 	}
+
+	defer func() {
+		t, err := r.service.CreateEmailVerification(u.Id)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		_ = email.SendEmailVerification(u.Email, t)
+
+	}()
 
 	c.JSON(http.StatusCreated, u.GetWithoutPassword())
 

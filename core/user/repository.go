@@ -14,6 +14,7 @@ type Repository interface {
 	// Delete(id string) error
 	FindOneByEmail(email string) (entity.User, error)
 	FindOneById(id string) (entity.User, error)
+	CreateEmailVerification(id string) (string, error)
 	// VerifyEmail(id string) error
 	// Deactivate(id string) error
 }
@@ -77,4 +78,15 @@ func (r repository) FindOneById(id string) (entity.User, error) {
 	}
 
 	return user, nil
+}
+
+func (r repository) CreateEmailVerification(id string) (string, error) {
+	e := entity.NewEmailVerification(id)
+	stmt := `INSERT INTO token (id, token, expireAt, isClaimed, userId) VALUES(?, ?, ?, FALSE, ?) `
+	_, err := r.DB.Exec(stmt, e.Id, e.Token, e.ExpireAt, e.UserId)
+	if err != nil {
+		return "", err
+	}
+
+	return e.Token, nil
 }

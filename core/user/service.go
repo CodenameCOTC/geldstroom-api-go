@@ -12,6 +12,7 @@ type Service interface {
 	Create(entity.User) (entity.User, error)
 	Login(dto CredentialsDto) (entity.User, error)
 	GenerateJWT(user entity.User) (string, error)
+	CreateEmailVerification(id string) (string, error)
 }
 
 type service struct {
@@ -38,4 +39,8 @@ func (s service) GenerateJWT(user entity.User) (string, error) {
 		"email": user.Email,
 		"exp":   time.Now().Add(time.Hour * 240).Unix(),
 	}).SignedString([]byte(config.ConfigKey.SECRET))
+}
+
+func (s service) CreateEmailVerification(id string) (string, error) {
+	return s.repo.CreateEmailVerification(id)
 }
