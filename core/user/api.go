@@ -130,6 +130,12 @@ func (r resource) login(c *gin.Context) {
 func (r resource) resendEmailVerification(c *gin.Context) {
 	var dto ResendEmailVerificationDto
 	_ = c.ShouldBind(&dto)
+
+	if validate := dto.validate(); !validate.IsValid {
+		c.JSON(http.StatusBadRequest, errorsresponse.ValidationError(ErrValidationFailedCode, ErrValidationFailed, validate.Error))
+		return
+	}
+
 	u, err := r.service.FindOneByEmail(dto.Email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
