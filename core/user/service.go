@@ -10,11 +10,13 @@ import (
 
 type Service interface {
 	Create(entity.User) (entity.User, error)
-	Login(dto CredentialsDto) (entity.User, error)
+	FindOneByEmail(email string) (entity.User, error)
 	GenerateJWT(user entity.User) (string, error)
 	CreateEmailVerification(id string) (string, error)
 	FindOneToken(token string) (entity.EmailVerification, error)
 	VerifyEmail(userId, tokenId string) error
+	FindTokenByUserId(id string) (entity.EmailVerification, error)
+	RenewToken(id string) (entity.EmailVerification, error)
 }
 
 type service struct {
@@ -30,8 +32,8 @@ func (s service) Create(u entity.User) (entity.User, error) {
 
 }
 
-func (s service) Login(dto CredentialsDto) (entity.User, error) {
-	return s.repo.FindOneByEmail(dto.Email)
+func (s service) FindOneByEmail(email string) (entity.User, error) {
+	return s.repo.FindOneByEmail(email)
 
 }
 
@@ -41,6 +43,14 @@ func (s service) CreateEmailVerification(id string) (string, error) {
 
 func (s service) FindOneToken(token string) (entity.EmailVerification, error) {
 	return s.repo.FindOneToken(token)
+}
+
+func (s service) FindTokenByUserId(id string) (entity.EmailVerification, error) {
+	return s.repo.FindTokenByUserId(id)
+}
+
+func (s service) RenewToken(id string) (entity.EmailVerification, error) {
+	return s.repo.RenewToken(id)
 }
 
 func (s service) VerifyEmail(userId, tokenId string) error {

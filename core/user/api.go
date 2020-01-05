@@ -22,6 +22,7 @@ func RegisterHandler(r *gin.Engine, service Service) {
 		userRoute.POST("/register", res.create)
 		userRoute.POST("/login", res.login)
 		userRoute.GET("/verify/email/:token", res.verifyEmail)
+		userRoute.POST("/resend/verification/email", res.resendEmailVerification)
 	}
 }
 
@@ -82,7 +83,7 @@ func (r resource) login(c *gin.Context) {
 		return
 	}
 
-	u, err := r.service.Login(dto)
+	u, err := r.service.FindOneByEmail(dto.Email)
 	if err != nil {
 		if errors.Is(err, ErrInvalidCredentials) {
 			c.JSON(http.StatusBadRequest, errorsresponse.BadRequestResponse{
@@ -124,6 +125,66 @@ func (r resource) login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
 	}
 	c.JSON(http.StatusOK, gin.H{"Bearer": token})
+}
+
+func (r resource) resendEmailVerification(c *gin.Context) {
+	var dto ResendEmailVerificationDto
+	_ = c.ShouldBind(&dto)
+	u, err := r.service.FindOneByEmail(dto.Email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.JSON(http.StatusNotFound, errorsresponse.NotFound("Email is not registered"))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
+		return
+	}
+
+	if u.IsEmailVerified {
+		c.JSON(http.StatusBadRequest, errorsresponse.BadRequestResponse{
+			ErrorCode: ErrEmailIsAlreadyVerifiedCode,
+			Message:   ErrEmailIsAlreadyVerified.Error(),
+		})
+		return
+	}
+
+	t, err := r.service.FindTokenByUserId(u.Id)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			t, err := r.service.CreateEmailVerification(u.Id)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
+				return
+			}
+			err = email.SendEmailVerification(u.Email, t)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
+				return
+			}
+
+			c.JSON(http.StatusNoContent, gin.H{})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
+		return
+	}
+
+	if t.IsClaimed {
+		c.JSON(http.StatusBadRequest, errorsresponse.BadRequestResponse{
+			ErrorCode: ErrEmailVerificationAlreadyClaimedCode,
+			Message:   ErrEmailVerificationAlreadyClaimed.Error(),
+		})
+		return
+	}
+
+	err = email.SendEmailVerification(u.Email, t.Token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
+		return
+	}
+
+	c.JSON(http.StatusNoContent, gin.H{})
 }
 
 func (r resource) verifyEmail(c *gin.Context) {

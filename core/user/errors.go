@@ -17,4 +17,6 @@ var (
 	ErrEmailVerificationExpiredCode        = "USER_0006"
 	ErrEmailVerificationAlreadyClaimed     = errors.New("Email verification is already claimed")
 	ErrEmailVerificationAlreadyClaimedCode = "USER_0007"
+	ErrEmailIsAlreadyVerified              = errors.New("Email is already verified")
+	ErrEmailIsAlreadyVerifiedCode          = "USER_0008"
 )

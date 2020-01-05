@@ -16,6 +16,8 @@ type Repository interface {
 	FindOneById(id string) (entity.User, error)
 	CreateEmailVerification(id string) (string, error)
 	FindOneToken(token string) (entity.EmailVerification, error)
+	FindTokenByUserId(id string) (entity.EmailVerification, error)
+	RenewToken(id string) (entity.EmailVerification, error)
 	VerifyEmail(userId, tokenId string) error
 	// Deactivate(id string) error
 }
@@ -100,6 +102,29 @@ func (r repository) FindOneToken(token string) (entity.EmailVerification, error)
 	if err != nil {
 		return ev, err
 	}
+	return ev, nil
+}
+
+func (r repository) RenewToken(id string) (entity.EmailVerification, error) {
+	e := entity.NewEmailVerification(id)
+	stmt := `UPDATE token SET token=?, expireAt=? WHERE id = ?`
+	_, err := r.DB.Exec(stmt, e.Token, e.ExpireAt, id)
+	if err != nil {
+		return e, err
+	}
+
+	return e, err
+}
+
+func (r repository) FindTokenByUserId(id string) (entity.EmailVerification, error) {
+	ev := entity.EmailVerification{}
+	stmt := `SELECT * FROM token WHERE userId = ?`
+	row := r.DB.QueryRow(stmt, id)
+	err := row.Scan(&ev.Id, &ev.Token, &ev.ExpireAt, &ev.IsClaimed, &ev.UserId)
+	if err != nil {
+		return ev, err
+	}
+
 	return ev, nil
 }
 

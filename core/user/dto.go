@@ -66,3 +66,25 @@ func (dto CredentialsDto) validate() validator.Validate {
 
 	return v
 }
+
+type ResendEmailVerificationDto struct {
+	Email string `form:"email"`
+}
+
+func (dto ResendEmailVerificationDto) validate() validator.Validate {
+	v := validator.New()
+
+	if !validator.EmailRX.MatchString(dto.Email) {
+		v.Error["email"] = "Invalid email address"
+	}
+
+	if strings.TrimSpace(dto.Email) == "" {
+		v.Error["email"] = "Email is cannot be empty"
+	}
+
+	if len(v.Error) > 0 {
+		v.IsValid = false
+	}
+
+	return v
+}
