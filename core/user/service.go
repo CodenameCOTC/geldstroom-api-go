@@ -13,6 +13,8 @@ type Service interface {
 	Login(dto CredentialsDto) (entity.User, error)
 	GenerateJWT(user entity.User) (string, error)
 	CreateEmailVerification(id string) (string, error)
+	FindOneToken(token string) (entity.EmailVerification, error)
+	VerifyEmail(userId, tokenId string) error
 }
 
 type service struct {
@@ -33,14 +35,22 @@ func (s service) Login(dto CredentialsDto) (entity.User, error) {
 
 }
 
+func (s service) CreateEmailVerification(id string) (string, error) {
+	return s.repo.CreateEmailVerification(id)
+}
+
+func (s service) FindOneToken(token string) (entity.EmailVerification, error) {
+	return s.repo.FindOneToken(token)
+}
+
+func (s service) VerifyEmail(userId, tokenId string) error {
+	return s.repo.VerifyEmail(userId, tokenId)
+}
+
 func (s service) GenerateJWT(user entity.User) (string, error) {
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":    user.Id,
 		"email": user.Email,
 		"exp":   time.Now().Add(time.Hour * 240).Unix(),
 	}).SignedString([]byte(config.ConfigKey.SECRET))
-}
-
-func (s service) CreateEmailVerification(id string) (string, error) {
-	return s.repo.CreateEmailVerification(id)
 }

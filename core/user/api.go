@@ -1,6 +1,7 @@
 package user
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -20,6 +21,7 @@ func RegisterHandler(r *gin.Engine, service Service) {
 	{
 		userRoute.POST("/register", res.create)
 		userRoute.POST("/login", res.login)
+		userRoute.GET("/verify/email/:token", res.verifyEmail)
 	}
 }
 
@@ -122,4 +124,40 @@ func (r resource) login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
 	}
 	c.JSON(http.StatusOK, gin.H{"Bearer": token})
+}
+
+func (r resource) verifyEmail(c *gin.Context) {
+	tParam := c.Param("token")
+	t, err := r.service.FindOneToken(tParam)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			c.JSON(http.StatusNotFound, errorsresponse.NotFound("Token not found"))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
+		return
+	}
+
+	if t.IsExpired() {
+		c.JSON(http.StatusBadRequest, errorsresponse.BadRequestResponse{
+			ErrorCode: ErrEmailVerificationExpiredCode,
+			Message:   ErrEmailVerificationExpired.Error(),
+		})
+		return
+	}
+
+	if t.IsClaimed {
+		c.JSON(http.StatusBadRequest, errorsresponse.BadRequestResponse{
+			ErrorCode: ErrEmailVerificationAlreadyClaimedCode,
+			Message:   ErrEmailVerificationAlreadyClaimed.Error(),
+		})
+		return
+	}
+
+	if err = r.service.VerifyEmail(t.UserId, t.Id); err != nil {
+		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
+		return
+	}
+
+	c.JSON(http.StatusNoContent, gin.H{})
 }

@@ -15,7 +15,8 @@ type Repository interface {
 	FindOneByEmail(email string) (entity.User, error)
 	FindOneById(id string) (entity.User, error)
 	CreateEmailVerification(id string) (string, error)
-	// VerifyEmail(id string) error
+	FindOneToken(token string) (entity.EmailVerification, error)
+	VerifyEmail(userId, tokenId string) error
 	// Deactivate(id string) error
 }
 
@@ -89,4 +90,48 @@ func (r repository) CreateEmailVerification(id string) (string, error) {
 	}
 
 	return e.Token, nil
+}
+
+func (r repository) FindOneToken(token string) (entity.EmailVerification, error) {
+	ev := entity.EmailVerification{}
+	stmt := `SELECT * FROM token WHERE token = ?`
+	row := r.DB.QueryRow(stmt, token)
+	err := row.Scan(&ev.Id, &ev.Token, &ev.ExpireAt, &ev.IsClaimed, &ev.UserId)
+	if err != nil {
+		return ev, err
+	}
+	return ev, nil
+}
+
+func (r repository) VerifyEmail(userId, tokenId string) error {
+	tx, err := r.DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	stmt := `UPDATE USER SET isEmailVerified = TRUE where id = ?`
+	_, err = tx.Exec(stmt, userId)
+	if err != nil {
+		err := tx.Rollback()
+		if err != nil {
+			return err
+		}
+		return err
+	}
+
+	stmt = `UPDATE token SET isClaimed = TRUE WHERE id = ?`
+	_, err = tx.Exec(stmt, tokenId)
+	if err != nil {
+		err := tx.Rollback()
+		if err != nil {
+			return err
+		}
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
 }
