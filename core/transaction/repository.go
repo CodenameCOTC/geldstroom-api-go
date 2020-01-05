@@ -46,9 +46,9 @@ func (r repository) FindOneById(id, userId string) (entity.Transaction, error) {
 		&t.Description,
 		&t.Category,
 		&t.Type,
-		&t.UserId,
 		&t.CreatedAt,
 		&t.UpdatedAt,
+		&t.UserId,
 	)
 
 	if err != nil {
@@ -109,7 +109,7 @@ func (r repository) Get(dateRange getrange.Range, userId string) ([]entity.Trans
 
 	for rows.Next() {
 		t := entity.Transaction{}
-		err = rows.Scan(&t.Id, &t.Amount, &t.Description, &t.Category, &t.Type, &t.UserId, &t.CreatedAt, &t.UpdatedAt)
+		err = rows.Scan(&t.Id, &t.Amount, &t.Description, &t.Category, &t.Type, &t.CreatedAt, &t.UpdatedAt, &t.UserId)
 		if err != nil {
 			return nil, err
 		}
