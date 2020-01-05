@@ -48,6 +48,7 @@ func (r resource) get(c *gin.Context) {
 	}
 
 	t, err := r.service.Get(*dr, user.Id)
+	fmt.Println(err)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
 		return
