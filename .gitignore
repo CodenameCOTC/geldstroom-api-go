@@ -26,6 +26,6 @@
 *.env
 
 # Build
-geldstroom-api-go
+main
 
 # End of https://www.gitignore.io/api/go
