@@ -25,6 +25,9 @@
 
 *.env
 
+/data
+backup.sql
+
 # Build
 main
 
