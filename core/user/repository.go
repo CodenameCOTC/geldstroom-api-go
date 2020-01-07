@@ -134,7 +134,7 @@ func (r repository) VerifyEmail(userId, tokenId string) error {
 		return err
 	}
 
-	stmt := `UPDATE USER SET isEmailVerified = TRUE where id = ?`
+	stmt := `UPDATE user SET isEmailVerified = TRUE where id = ?`
 	_, err = tx.Exec(stmt, userId)
 	if err != nil {
 		err := tx.Rollback()
