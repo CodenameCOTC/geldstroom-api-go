@@ -6,7 +6,7 @@ services:
     restart: always
     build: .
     environment:
-      - VIRTUAL_HOST=geldstroom.cotcapp.my.id,www.geldstroom.cotcapp.my.id
+      - VIRTUAL_HOST=geldstroom.cotcapp.my.id
       - VIRTUAL_NETWORK=nginx-proxy
       - VIRTUAL_PORT=4000
       - LETSENCRYPT_HOST=geldstroom.cotcapp.my.id

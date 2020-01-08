@@ -7,6 +7,8 @@ COPY go.sum .
 RUN go mod download
 COPY . .
 
+ENV GIN_MODE=release
+
 RUN go build -ldflags="-s -w" ./cmd/server/main.go
 
 EXPOSE 4000
