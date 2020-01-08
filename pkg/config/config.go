@@ -7,6 +7,7 @@ type Key struct {
 	DB_DSN       string
 	ADDR         string
 	SECRET       string
+	SENTRY_DSN   string
 }
 
 const (
@@ -14,6 +15,7 @@ const (
 	sendgridKey = "SENDGRID_KEY"
 	addrKey     = "ADDR"
 	secretKey   = "SECRET"
+	sentryKey   = "SENTRY_DSN"
 )
 
 var ConfigKey Key
@@ -24,5 +26,6 @@ func LoadKey() {
 		SENDGRID_KEY: os.Getenv(sendgridKey),
 		ADDR:         os.Getenv(addrKey),
 		SECRET:       os.Getenv(secretKey),
+		SENTRY_DSN:   os.Getenv(sentryKey),
 	}
 }

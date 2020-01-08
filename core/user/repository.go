@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/novaladip/geldstroom-api-go/pkg/entity"
+	"github.com/novaladip/geldstroom-api-go/pkg/errors/report"
 )
 
 type Repository interface {
@@ -45,10 +46,10 @@ func (r repository) Create(user entity.User) (entity.User, error) {
 		var mySQLError *mysql.MySQLError
 		if errors.As(err, &mySQLError) {
 			if mySQLError.Number == 1062 && strings.Contains(mySQLError.Message, "email") {
-				return user, ErrDuplicateEmail
+				return user, report.ErrorWrapperWithSentry(ErrDuplicateEmail)
 			}
 		}
-		return user, err
+		return user, report.ErrorWrapperWithSentry(err)
 	}
 
 	return user.GetWithoutPassword(), nil
@@ -62,9 +63,9 @@ func (r repository) FindOneByEmail(email string) (entity.User, error) {
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return user, ErrInvalidCredentials
+			return user, report.ErrorWrapperWithSentry(ErrInvalidCredentials)
 		}
-		return user, err
+		return user, report.ErrorWrapperWithSentry(err)
 	}
 
 	return user, nil
@@ -77,7 +78,7 @@ func (r repository) FindOneById(id string) (entity.User, error) {
 	err := row.Scan(&user.Id, &user.Email, &user.Password, &user.IsActive, &user.JoinDate, &user.LastActivity, &user.IsEmailVerified)
 
 	if err != nil {
-		return user, err
+		return user, report.ErrorWrapperWithSentry(err)
 	}
 
 	return user, nil
@@ -88,7 +89,7 @@ func (r repository) CreateEmailVerification(id string) (string, error) {
 	stmt := `INSERT INTO token (id, token, expireAt, isClaimed, userId) VALUES(?, ?, ?, FALSE, ?) `
 	_, err := r.DB.Exec(stmt, e.Id, e.Token, e.ExpireAt, e.UserId)
 	if err != nil {
-		return "", err
+		return "", report.ErrorWrapperWithSentry(err)
 	}
 
 	return e.Token, nil
@@ -100,7 +101,7 @@ func (r repository) FindOneToken(token string) (entity.EmailVerification, error)
 	row := r.DB.QueryRow(stmt, token)
 	err := row.Scan(&ev.Id, &ev.Token, &ev.ExpireAt, &ev.IsClaimed, &ev.UserId)
 	if err != nil {
-		return ev, err
+		return ev, report.ErrorWrapperWithSentry(err)
 	}
 	return ev, nil
 }
@@ -110,7 +111,7 @@ func (r repository) RenewToken(id string) (entity.EmailVerification, error) {
 	stmt := `UPDATE token SET token=?, expireAt=? WHERE id = ?`
 	_, err := r.DB.Exec(stmt, e.Token, e.ExpireAt, id)
 	if err != nil {
-		return e, err
+		return e, report.ErrorWrapperWithSentry(err)
 	}
 
 	return e, err
@@ -122,7 +123,7 @@ func (r repository) FindTokenByUserId(id string) (entity.EmailVerification, erro
 	row := r.DB.QueryRow(stmt, id)
 	err := row.Scan(&ev.Id, &ev.Token, &ev.ExpireAt, &ev.IsClaimed, &ev.UserId)
 	if err != nil {
-		return ev, err
+		return ev, report.ErrorWrapperWithSentry(err)
 	}
 
 	return ev, nil
@@ -139,7 +140,7 @@ func (r repository) VerifyEmail(userId, tokenId string) error {
 	if err != nil {
 		err := tx.Rollback()
 		if err != nil {
-			return err
+			return report.ErrorWrapperWithSentry(err)
 		}
 		return err
 	}
@@ -149,13 +150,13 @@ func (r repository) VerifyEmail(userId, tokenId string) error {
 	if err != nil {
 		err := tx.Rollback()
 		if err != nil {
-			return err
+			return report.ErrorWrapperWithSentry(err)
 		}
-		return err
+		return report.ErrorWrapperWithSentry(err)
 	}
 
 	if err = tx.Commit(); err != nil {
-		return err
+		return report.ErrorWrapperWithSentry(err)
 	}
 
 	return nil

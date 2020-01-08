@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/novaladip/geldstroom-api-go/pkg/entity"
+	"github.com/novaladip/geldstroom-api-go/pkg/errors/report"
 	"github.com/novaladip/geldstroom-api-go/pkg/getrange"
 )
 
@@ -29,7 +30,7 @@ func (r repository) Create(t entity.Transaction) (entity.Transaction, error) {
 	_, err := r.DB.Exec(stmt, t.Id, t.Amount, t.Description, t.Category, t.Type, t.UserId)
 
 	if err != nil {
-		return t, err
+		return t, report.ErrorWrapperWithSentry(err)
 	}
 
 	return t, nil
@@ -53,9 +54,9 @@ func (r repository) FindOneById(id, userId string) (entity.Transaction, error) {
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return t, ErrTransactionNotFound
+			return t, report.ErrorWrapperWithSentry(ErrTransactionNotFound)
 		}
-		return t, err
+		return t, report.ErrorWrapperWithSentry(err)
 	}
 	return t, nil
 }
@@ -65,16 +66,16 @@ func (r repository) DeleteOneById(id, userId string) error {
 	result, err := r.DB.Exec(stmt, id, userId)
 
 	if err != nil {
-		return err
+		return report.ErrorWrapperWithSentry(err)
 	}
 
 	affected, err := result.RowsAffected()
 	if err != nil {
-		return err
+		return report.ErrorWrapperWithSentry(err)
 	}
 
 	if affected == 0 {
-		return ErrTransactionNotFound
+		return report.ErrorWrapperWithSentry(ErrTransactionNotFound)
 	}
 
 	return nil
@@ -85,12 +86,12 @@ func (r repository) UpdateOneById(id, userId string, dto UpdateDto) (entity.Tran
 	stmt := `UPDATE transaction SET amount=?, category=?, type=?, description=? WHERE userId = ? AND id = ?`
 	_, err := r.DB.Exec(stmt, dto.Amount, dto.Category, dto.Type, dto.Description, userId, id)
 	if err != nil {
-		return t, err
+		return t, report.ErrorWrapperWithSentry(err)
 	}
 
 	t, err = r.FindOneById(id, userId)
 	if err != nil {
-		return t, err
+		return t, report.ErrorWrapperWithSentry(err)
 	}
 
 	return t, nil
@@ -111,13 +112,13 @@ func (r repository) Get(dateRange getrange.Range, userId string) ([]entity.Trans
 		t := entity.Transaction{}
 		err = rows.Scan(&t.Id, &t.Amount, &t.Description, &t.Category, &t.Type, &t.CreatedAt, &t.UpdatedAt, &t.UserId)
 		if err != nil {
-			return nil, err
+			return nil, report.ErrorWrapperWithSentry(err)
 		}
 		transactions = append(transactions, t)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, report.ErrorWrapperWithSentry(err)
 	}
 
 	return transactions, nil

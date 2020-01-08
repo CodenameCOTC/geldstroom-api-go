@@ -8,9 +8,10 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/novaladip/geldstroom-api-go/pkg/entity"
 	"github.com/novaladip/geldstroom-api-go/pkg/config"
+	"github.com/novaladip/geldstroom-api-go/pkg/entity"
 	errorsresponse "github.com/novaladip/geldstroom-api-go/pkg/errors"
+	"github.com/novaladip/geldstroom-api-go/pkg/errors/report"
 )
 
 type Middleware interface {
@@ -54,11 +55,13 @@ func (am authMiddleware) AuthGuard() gin.HandlerFunc {
 		})
 
 		if err != nil {
+			_ = report.ErrorWrapperWithSentry(err)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, errorsresponse.Unauthorized(""))
 			return
 		}
 
 		if !token.Valid {
+			_ = report.ErrorWrapperWithSentry(errors.New("Invalid bearer token"))
 			c.AbortWithStatusJSON(http.StatusUnauthorized, errorsresponse.Unauthorized(""))
 			return
 		}

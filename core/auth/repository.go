@@ -3,8 +3,9 @@ package auth
 import (
 	"database/sql"
 
-	"github.com/novaladip/geldstroom-api-go/pkg/entity"
 	"github.com/novaladip/geldstroom-api-go/core/user"
+	"github.com/novaladip/geldstroom-api-go/pkg/entity"
+	"github.com/novaladip/geldstroom-api-go/pkg/errors/report"
 )
 
 type Repository interface {
@@ -26,7 +27,8 @@ func (r repository) CheckIsUserExist(id string) error {
 	err := row.Scan(&u.Id, &u.Email, &u.Password, &u.IsActive, &u.JoinDate, &u.LastActivity, &u.IsEmailVerified)
 
 	if err != nil {
-		return err
+		return report.ErrorWrapperWithSentry(err)
+
 	}
 
 	if !u.IsEmailVerified {

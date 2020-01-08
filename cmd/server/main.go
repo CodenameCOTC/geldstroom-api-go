@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/novaladip/geldstroom-api-go/core/transaction"
@@ -22,6 +23,10 @@ func main() {
 	}
 
 	config.LoadKey()
+
+	if err = sentry.Init(sentry.ClientOptions{Dsn: config.ConfigKey.SENTRY_DSN}); err != nil {
+		log.Fatal(err.Error())
+	}
 
 	db, err := database.OpenDB(config.ConfigKey.DB_DSN)
 	if err != nil {

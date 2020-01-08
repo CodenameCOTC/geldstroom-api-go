@@ -144,7 +144,6 @@ func (r resource) updateOneById(c *gin.Context) {
 	}
 
 	t, err := r.service.UpdateOneById(tId, user.Id, dto)
-	fmt.Println(err)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			c.JSON(http.StatusNotFound, errorsresponse.NotFound(fmt.Sprintf("Transaction with ID: %v is not found", tId)))
