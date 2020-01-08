@@ -7,7 +7,7 @@ COPY go.sum .
 RUN go mod download
 COPY . .
 
-RUN go build ./cmd/server/main.go
+RUN go build -ldflags="-s -w" ./cmd/server/main.go
 
 EXPOSE 4000
 
