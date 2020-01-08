@@ -105,7 +105,7 @@ func (r resource) login(c *gin.Context) {
 	}
 
 	if !u.IsActive {
-		c.JSON(http.StatusBadGateway, errorsresponse.BadRequestResponse{
+		c.JSON(http.StatusBadRequest, errorsresponse.BadRequestResponse{
 			ErrorCode: ErrUserIsNotActiveCode,
 			Message:   ErrUserIsNotActive.Error(),
 		})
@@ -113,7 +113,7 @@ func (r resource) login(c *gin.Context) {
 	}
 
 	if !u.IsEmailVerified {
-		c.JSON(http.StatusBadGateway, errorsresponse.BadRequestResponse{
+		c.JSON(http.StatusBadRequest, errorsresponse.BadRequestResponse{
 			ErrorCode: ErrEmailIsNotVerifiedCode,
 			Message:   ErrEmailIsNotVerified.Error(),
 		})
