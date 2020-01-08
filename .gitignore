@@ -25,6 +25,7 @@
 
 *.env
 
+/volumes
 /data
 backup.sql
 
