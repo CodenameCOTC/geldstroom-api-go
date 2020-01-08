@@ -5,8 +5,6 @@ services:
     container_name: app
     restart: always
     build: .
-    ports:
-      - '4000:4000'
     environment:
       - VIRTUAL_HOST=geldstroom.cotcapp.my.id
       - VIRTUAL_NETWORK=nginx-proxy

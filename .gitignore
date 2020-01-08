@@ -25,7 +25,7 @@
 
 *.env
 
-/volumes
+/volumes/proxy/certs
 /data
 backup.sql
 
