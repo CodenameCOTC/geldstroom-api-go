@@ -8,6 +8,7 @@ type Key struct {
 	ADDR         string
 	SECRET       string
 	SENTRY_DSN   string
+	APP_MODE     string
 }
 
 const (
@@ -16,6 +17,7 @@ const (
 	addrKey     = "ADDR"
 	secretKey   = "SECRET"
 	sentryKey   = "SENTRY_DSN"
+	appModeKey  = "APP_MODE"
 )
 
 var ConfigKey Key
@@ -27,5 +29,6 @@ func LoadKey() {
 		ADDR:         os.Getenv(addrKey),
 		SECRET:       os.Getenv(secretKey),
 		SENTRY_DSN:   os.Getenv(sentryKey),
+		APP_MODE:     os.Getenv(appModeKey),
 	}
 }
