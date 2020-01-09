@@ -138,7 +138,7 @@ func (r resource) resendEmailVerification(c *gin.Context) {
 
 	u, err := r.service.FindOneByEmail(dto.Email)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, ErrInvalidCredentials) {
 			c.JSON(http.StatusNotFound, errorsresponse.NotFound("Email is not registered"))
 			return
 		}
@@ -182,6 +182,14 @@ func (r resource) resendEmailVerification(c *gin.Context) {
 			Message:   ErrEmailVerificationAlreadyClaimed.Error(),
 		})
 		return
+	}
+
+	if t.IsExpired() {
+		t, err = r.service.RenewToken(t.Id)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
+			return
+		}
 	}
 
 	err = email.SendEmailVerification(u.Email, t.Token)
