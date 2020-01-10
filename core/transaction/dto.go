@@ -84,3 +84,33 @@ func (dto UpdateDto) Validate() validator.Validate {
 
 	return v
 }
+
+type TransactionFilterQuery struct {
+	Type     string
+	Category string
+}
+
+var (
+	typeVar         = "type"
+	categoryVar     = "category"
+	defaultType     = "ALL"
+	defaultCategory = "ALL"
+)
+
+func NewTransactionFilterQueryFromRequest(c *gin.Context) TransactionFilterQuery {
+	t := strings.ToUpper(c.Query(typeVar))
+	category := strings.ToUpper(c.Query(categoryVar))
+
+	if t != "INCOME" && t != "EXPENSE" {
+		t = defaultType
+	}
+
+	if strings.TrimSpace(category) == "" {
+		category = defaultCategory
+	}
+
+	return TransactionFilterQuery{
+		Type:     t,
+		Category: category,
+	}
+}

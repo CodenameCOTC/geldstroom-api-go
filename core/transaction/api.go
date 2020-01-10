@@ -39,6 +39,7 @@ type resource struct {
 }
 
 func (r resource) get(c *gin.Context) {
+	filter := NewTransactionFilterQueryFromRequest(c)
 	user := entity.JwtPayloadFromRequest(c)
 	p := pagination.NewFromRequest(c)
 	dr, err := getrange.NewFromRequest(c)
@@ -47,7 +48,14 @@ func (r resource) get(c *gin.Context) {
 		return
 	}
 
-	t, count, err := r.service.Get(*dr, p.Page, p.PerPage, user.Id)
+	t, count, err := r.service.Get(GetParam{
+		DateRange: *dr,
+		Page:      p.Page,
+		PerPage:   p.PerPage,
+		UserId:    user.Id,
+		Category:  filter.Category,
+		Type:      filter.Type,
+	})
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))

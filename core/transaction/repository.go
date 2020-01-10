@@ -9,8 +9,17 @@ import (
 	"github.com/novaladip/geldstroom-api-go/pkg/getrange"
 )
 
+type GetParam struct {
+	DateRange getrange.Range
+	Page      int
+	PerPage   int
+	UserId    string
+	Category  string
+	Type      string
+}
+
 type Repository interface {
-	Get(dateRange getrange.Range, page, perPage int, userId string) ([]entity.Transaction, int, error)
+	Get(p GetParam) ([]entity.Transaction, int, error)
 	Create(t entity.Transaction) (entity.Transaction, error)
 	FindOneById(id, userId string) (entity.Transaction, error)
 	DeleteOneById(id, userId string) error
@@ -23,6 +32,133 @@ type repository struct {
 
 func NewRepository(db *sql.DB) Repository {
 	return repository{db}
+}
+
+func GetQuery(p GetParam, db *sql.DB) (*sql.Rows, *sql.Row, error) {
+	var stmt string
+	var rows *sql.Rows
+	var row *sql.Row
+
+	if p.Category != "ALL" && p.Type != "ALL" {
+		stmt = `SELECT * FROM transaction WHERE userId = ? AND category = ? AND type = ? AND createdAt BETWEEN ? AND ? ORDER BY createdAt DESC LIMIT ?, ?`
+		rows, err := db.Query(
+			stmt,
+			p.UserId,
+			p.Category,
+			p.Type,
+			p.DateRange.FirstDay,
+			p.DateRange.LastDay,
+			(p.Page-1)*p.PerPage,
+			p.PerPage,
+		)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		stmt = `SELECT COUNT(*) FROM transaction WHERE userId = ? AND category = ? AND type = ?`
+		row = db.QueryRow(stmt, p.UserId, p.Category, p.Type)
+
+		return rows, row, nil
+	}
+
+	if p.Category == "ALL" && p.Type == "ALL" {
+		stmt = `SELECT * FROM transaction WHERE userId = ? AND createdAt BETWEEN ? AND ? ORDER BY createdAt DESC LIMIT ?, ?`
+		rows, err := db.Query(
+			stmt,
+			p.UserId,
+			p.DateRange.FirstDay,
+			p.DateRange.LastDay,
+			(p.Page-1)*p.PerPage,
+			p.PerPage,
+		)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		stmt = `SELECT COUNT(*) FROM transaction WHERE userId = ? `
+		row = db.QueryRow(stmt, p.UserId)
+
+		return rows, row, nil
+	}
+
+	if p.Category == "ALL" && p.Type != "ALL" {
+		stmt = `SELECT * FROM transaction WHERE userId = ? AND type = ? AND createdAt BETWEEN ? AND ? ORDER BY createdAt DESC LIMIT ?, ?`
+		rows, err := db.Query(
+			stmt,
+			p.UserId,
+			p.Type,
+			p.DateRange.FirstDay,
+			p.DateRange.LastDay,
+			(p.Page-1)*p.PerPage,
+			p.PerPage,
+		)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		stmt = `SELECT COUNT(*) FROM transaction WHERE userId = ? AND type = ?`
+		row = db.QueryRow(stmt, p.UserId, p.Type)
+
+		return rows, row, nil
+	}
+
+	if p.Category != "ALL" && p.Type == "ALL" {
+		stmt = `SELECT * FROM transaction WHERE userId = ? AND category = ? AND createdAt BETWEEN ? AND ? ORDER BY createdAt DESC LIMIT ?, ?`
+		rows, err := db.Query(
+			stmt,
+			p.UserId,
+			p.Category,
+			p.DateRange.FirstDay,
+			p.DateRange.LastDay,
+			(p.Page-1)*p.PerPage,
+			p.PerPage,
+		)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		stmt = `SELECT COUNT(*) FROM transaction WHERE userId = ? AND category = ?`
+		row = db.QueryRow(stmt, p.UserId, p.Category)
+
+		return rows, row, nil
+	}
+
+	return rows, row, nil
+}
+
+func (r repository) Get(p GetParam) ([]entity.Transaction, int, error) {
+	rows, row, err := GetQuery(p, r.DB)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	defer rows.Close()
+
+	transactions := []entity.Transaction{}
+
+	for rows.Next() {
+		t := entity.Transaction{}
+		err = rows.Scan(&t.Id, &t.Amount, &t.Description, &t.Category, &t.Type, &t.CreatedAt, &t.UpdatedAt, &t.UserId)
+		if err != nil {
+			return nil, 0, report.ErrorWrapperWithSentry(err)
+		}
+		transactions = append(transactions, t)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, 0, report.ErrorWrapperWithSentry(err)
+	}
+
+	var count int
+	if err = row.Scan(&count); err != nil {
+		return nil, 0, report.ErrorWrapperWithSentry(err)
+	}
+
+	return transactions, count, nil
 }
 
 func (r repository) Create(t entity.Transaction) (entity.Transaction, error) {
@@ -95,40 +231,4 @@ func (r repository) UpdateOneById(id, userId string, dto UpdateDto) (entity.Tran
 	}
 
 	return t, nil
-}
-
-func (r repository) Get(dateRange getrange.Range, page, perPage int, userId string) ([]entity.Transaction, int, error) {
-	stmt := `SELECT * FROM transaction WHERE userId = ? AND createdAt BETWEEN ? AND ? ORDER BY updatedAt DESC LIMIT ?, ?`
-
-	rows, err := r.DB.Query(stmt, userId, dateRange.FirstDay, dateRange.LastDay, (page-1)*perPage, perPage)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	defer rows.Close()
-
-	transactions := []entity.Transaction{}
-
-	for rows.Next() {
-		t := entity.Transaction{}
-		err = rows.Scan(&t.Id, &t.Amount, &t.Description, &t.Category, &t.Type, &t.CreatedAt, &t.UpdatedAt, &t.UserId)
-		if err != nil {
-			return nil, 0, report.ErrorWrapperWithSentry(err)
-		}
-		transactions = append(transactions, t)
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, 0, report.ErrorWrapperWithSentry(err)
-	}
-
-	var count int
-	stmt = `SELECT COUNT(*) FROM transaction WHERE userId = ?`
-	row := r.DB.QueryRow(stmt, userId)
-	if err = row.Scan(&count); err != nil {
-		return nil, 0, report.ErrorWrapperWithSentry(err)
-	}
-
-	return transactions, count, nil
-
 }
