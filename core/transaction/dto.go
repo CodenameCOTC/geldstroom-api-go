@@ -3,6 +3,7 @@ package transaction
 import (
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/novaladip/geldstroom-api-go/pkg/validator"
 )
 
@@ -11,6 +12,12 @@ type CreateDto struct {
 	Description string `form:"description"`
 	Category    string `form:"category"`
 	Type        string `form:"type"`
+}
+
+func NewCreateDtoFromRequest(c *gin.Context) CreateDto {
+	var dto CreateDto
+	_ = c.ShouldBind(&dto)
+	return dto
 }
 
 func (dto CreateDto) Validate() validator.Validate {
@@ -44,6 +51,12 @@ type UpdateDto struct {
 	Description string `form:"description"`
 	Category    string `form:"category"`
 	Type        string `form:"type"`
+}
+
+func NewUpdateDtoFromRequest(c *gin.Context) UpdateDto {
+	var dto UpdateDto
+	_ = c.ShouldBind(&dto)
+	return dto
 }
 
 func (dto UpdateDto) Validate() validator.Validate {
