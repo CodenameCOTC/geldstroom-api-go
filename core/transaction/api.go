@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"strings"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/novaladip/geldstroom-api-go/core/auth"
 	"github.com/novaladip/geldstroom-api-go/pkg/entity"
 	"github.com/novaladip/geldstroom-api-go/pkg/getrange"
+	"github.com/novaladip/geldstroom-api-go/pkg/pagination"
 
 	errorsresponse "github.com/novaladip/geldstroom-api-go/pkg/errors"
 )
@@ -40,6 +42,7 @@ func (r resource) get(c *gin.Context) {
 	user, _ := c.MustGet("JwtPayload").(entity.JwtPayload)
 	dateRange := strings.ToUpper(c.Query("range"))
 	date := c.Query("date")
+	p := pagination.NewFromRequest(c)
 
 	dr, err := getrange.GetRange(date, dateRange)
 	if err != nil {
@@ -47,14 +50,18 @@ func (r resource) get(c *gin.Context) {
 		return
 	}
 
-	t, err := r.service.Get(*dr, user.Id)
-	fmt.Println(err)
+	t, count, err := r.service.Get(*dr, p.Page, p.PerPage, user.Id)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(""))
 		return
 	}
 
-	c.JSON(http.StatusOK, t)
+	p.Items = t
+	p.TotalCount = count
+	p.PageCount = int(math.Ceil(float64(count) / float64(p.PerPage)))
+
+	c.JSON(http.StatusOK, p)
 }
 
 func (r resource) create(c *gin.Context) {

@@ -12,6 +12,7 @@ type Key struct {
 }
 
 const (
+	APP_MODE    = "RELEASE"
 	dbDsnKey    = "DB_DSN"
 	sendgridKey = "SENDGRID_KEY"
 	addrKey     = "ADDR"

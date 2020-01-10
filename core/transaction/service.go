@@ -5,13 +5,12 @@ import (
 	"github.com/novaladip/geldstroom-api-go/pkg/getrange"
 )
 
-
 type Service interface {
 	Create(t entity.Transaction) (entity.Transaction, error)
 	FindOneById(id, userId string) (entity.Transaction, error)
 	DeleteOneById(id, userId string) error
 	UpdateOneById(id, userId string, dto UpdateDto) (entity.Transaction, error)
-	Get(dateRange getrange.Range, userId string) ([]entity.Transaction, error)
+	Get(dateRange getrange.Range, page, perPage int, userId string) ([]entity.Transaction, int, error)
 }
 
 type service struct {
@@ -22,8 +21,8 @@ func NewService(repo Repository) Service {
 	return service{repo}
 }
 
-func (s service) Get(dateRange getrange.Range, userId string) ([]entity.Transaction, error) {
-	return s.repo.Get(dateRange, userId)
+func (s service) Get(dateRange getrange.Range, page, perPage int, userId string) ([]entity.Transaction, int, error) {
+	return s.repo.Get(dateRange, page, perPage, userId)
 }
 
 func (s service) Create(t entity.Transaction) (entity.Transaction, error) {
