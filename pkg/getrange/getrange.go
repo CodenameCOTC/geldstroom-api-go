@@ -2,6 +2,8 @@ package getrange
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"strings"
 	"time"
 )
 
@@ -18,6 +20,13 @@ var (
 	ErrInvalidDateRange  = fmt.Errorf("Date range must be one of %v | %v | %v", OneDayRange, OneWeekRange, OneMonthRange)
 	ErrInvalidDateFormat = fmt.Errorf("Date format must be : %v", Layout)
 )
+
+func NewFromRequest(c *gin.Context) (*Range, error) {
+	dateRange := strings.ToUpper(c.Query("range"))
+	date := c.Query("date")
+
+	return GetRange(date, dateRange)
+}
 
 func GetRange(date, dateRange string) (*Range, error) {
 	if dateRange == OneDayRange {
