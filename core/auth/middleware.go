@@ -38,7 +38,7 @@ func (am authMiddleware) AuthGuard() gin.HandlerFunc {
 		_ = c.BindHeader(&header)
 
 		if (strings.TrimSpace(header.Authorization)) == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errorsresponse.Unauthorized(""))
 			return
 		}
 
