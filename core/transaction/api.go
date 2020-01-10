@@ -39,12 +39,9 @@ type resource struct {
 }
 
 func (r resource) get(c *gin.Context) {
-	user, _ := c.MustGet("JwtPayload").(entity.JwtPayload)
-	dateRange := strings.ToUpper(c.Query("range"))
-	date := c.Query("date")
+	user := entity.JwtPayloadFromRequest(c)
 	p := pagination.NewFromRequest(c)
-
-	dr, err := getrange.GetRange(date, dateRange)
+	dr, err := getrange.NewFromRequest(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, errorsresponse.InvalidQuery(ErrInvalidQueryCode, err))
 		return
@@ -65,12 +62,9 @@ func (r resource) get(c *gin.Context) {
 }
 
 func (r resource) create(c *gin.Context) {
-	var dto CreateDto
-	_ = c.ShouldBind(&dto)
-	user, _ := c.MustGet("JwtPayload").(entity.JwtPayload)
-
+	dto := NewCreateDtoFromRequest(c)
+	user := entity.JwtPayloadFromRequest(c)
 	validate := dto.Validate()
-
 	if !validate.IsValid {
 		c.JSON(http.StatusBadRequest, errorsresponse.
 			ValidationError(ErrValidationFailedCode,
@@ -99,8 +93,8 @@ func (r resource) create(c *gin.Context) {
 }
 
 func (r resource) findOneById(c *gin.Context) {
-	user, _ := c.MustGet("JwtPayload").(entity.JwtPayload)
 	tId := c.Param("id")
+	user := entity.JwtPayloadFromRequest(c)
 
 	t, err := r.service.FindOneById(tId, user.Id)
 	if err != nil {
@@ -116,8 +110,8 @@ func (r resource) findOneById(c *gin.Context) {
 }
 
 func (r resource) deleteOneById(c *gin.Context) {
-	user, _ := c.MustGet("JwtPayload").(entity.JwtPayload)
 	tId := c.Param("id")
+	user := entity.JwtPayloadFromRequest(c)
 
 	if err := r.service.DeleteOneById(tId, user.Id); err != nil {
 		if errors.Is(err, ErrTransactionNotFound) {
@@ -134,11 +128,9 @@ func (r resource) deleteOneById(c *gin.Context) {
 }
 
 func (r resource) updateOneById(c *gin.Context) {
-	var dto UpdateDto
-	user, _ := c.MustGet("JwtPayload").(entity.JwtPayload)
 	tId := c.Param("id")
-
-	_ = c.ShouldBind(&dto)
+	user := entity.JwtPayloadFromRequest(c)
+	dto := NewUpdateDtoFromRequest(c)
 
 	validate := dto.Validate()
 	if !validate.IsValid {
