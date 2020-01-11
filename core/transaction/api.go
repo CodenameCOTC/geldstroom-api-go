@@ -40,7 +40,7 @@ type resource struct {
 }
 
 func (r resource) getHandler(c *gin.Context) {
-	if c.Param("id") != "" && c.Param("amount") != "" {
+	if c.Param("id") != "" && c.Param("total") == "" {
 		r.findOneById(c)
 		return
 	}
