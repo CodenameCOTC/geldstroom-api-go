@@ -26,9 +26,10 @@ func RegisterHandler(r *gin.Engine, db *sql.DB, service Service) {
 	transactionRoutes := r.Group("/transaction")
 	transactionRoutes.Use(authMiddleare.AuthGuard())
 	{
-		transactionRoutes.GET("/", res.get)
+		transactionRoutes.GET("/", res.getHandler)
+		transactionRoutes.GET("/:id", res.getHandler)        // /transaction/<id>
+		transactionRoutes.GET("/:id/:total", res.getHandler) // /transaction/total/amount
 		transactionRoutes.POST("/", res.create)
-		transactionRoutes.GET("/:id", res.findOneById)
 		transactionRoutes.DELETE("/:id", res.deleteOneById)
 		transactionRoutes.PUT("/:id", res.updateOneById)
 	}
@@ -36,6 +37,42 @@ func RegisterHandler(r *gin.Engine, db *sql.DB, service Service) {
 
 type resource struct {
 	service Service
+}
+
+func (r resource) getHandler(c *gin.Context) {
+	if c.Param("id") != "" && c.Param("amount") != "" {
+		r.findOneById(c)
+		return
+	}
+
+	if c.Param("total") != "" {
+		r.getTotal(c)
+		return
+	}
+
+	r.get(c)
+}
+
+func (r resource) getTotal(c *gin.Context) {
+	user := entity.JwtPayloadFromRequest(c)
+	dr, err := getrange.NewFromRequest(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, errorsresponse.InvalidQuery(ErrInvalidQueryCode, err))
+		return
+	}
+
+	ta, err := r.service.GetTotal(GetTotalParam{
+		UserId:   user.Id,
+		Category: c.Query("category"),
+		Range:    *dr,
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorsresponse.InternalServerError(err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, ta)
 }
 
 func (r resource) get(c *gin.Context) {

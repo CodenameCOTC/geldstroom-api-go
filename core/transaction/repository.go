@@ -18,8 +18,15 @@ type GetParam struct {
 	Type      string
 }
 
+type GetTotalParam struct {
+	Category string
+	UserId   string
+	Range    getrange.Range
+}
+
 type Repository interface {
 	Get(p GetParam) ([]entity.Transaction, int, error)
+	GetTotal(p GetTotalParam) (entity.TotalAmount, error)
 	Create(t entity.Transaction) (entity.Transaction, error)
 	FindOneById(id, userId string) (entity.Transaction, error)
 	DeleteOneById(id, userId string) error
@@ -32,6 +39,40 @@ type repository struct {
 
 func NewRepository(db *sql.DB) Repository {
 	return repository{db}
+}
+
+func (r repository) GetTotal(p GetTotalParam) (entity.TotalAmount, error) {
+	var stmt string
+	var row *sql.Row
+	var err error
+	var ta entity.TotalAmount
+
+	if p.Category == "ALL" || p.Category == "" {
+		stmt = `SELECT ( 
+			SELECT IFNULL(SUM(amount), 0) FROM transaction WHERE userId = ? AND type = "INCOME" AND createdAt BETWEEN ? AND ?
+			) AS income,
+			(
+			SELECT IFNULL(SUM(amount), 0) FROM transaction WHERE userId = ? AND type = "EXPENSE" AND createdAt BETWEEN ? AND ?
+			) AS expense`
+		row = r.DB.QueryRow(stmt, p.UserId, p.Range.FirstDay, p.Range.LastDay, p.UserId, p.Range.FirstDay, p.Range.LastDay)
+
+	} else {
+		stmt = `SELECT ( 
+			SELECT IFNULL(SUM(amount), 0) FROM transaction WHERE userId = ? AND type = "INCOME" AND category = ? AND createdAt BETWEEN ? AND ?
+			) AS income,
+			(
+			SELECT IFNULL(SUM(amount), 0) FROM transaction WHERE userId = ? AND type = "EXPENSE" AND category = ? AND createdAt BETWEEN ? AND ?
+			) AS expense`
+		row = r.DB.QueryRow(stmt, p.UserId, p.Category, p.Range.FirstDay, p.Range.LastDay, p.UserId, p.Category, p.Range.FirstDay, p.Range.LastDay)
+
+	}
+
+	err = row.Scan(&ta.Income, &ta.Expense)
+	if err != nil {
+		return ta, err
+	}
+
+	return ta, nil
 }
 
 func GetQuery(p GetParam, db *sql.DB) (*sql.Rows, *sql.Row, error) {

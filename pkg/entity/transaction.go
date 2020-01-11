@@ -12,3 +12,8 @@ type Transaction struct {
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
+
+type TotalAmount struct {
+	Income  int `json:"income"`
+	Expense int `json:"expense"`
+}
