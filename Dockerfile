@@ -6,7 +6,7 @@ ENV GO111MODULE=on \
     GOARCH=amd64 \
     GIN_MODE=release
 
-WORKDIR /app/server    
+WORKDIR /app/server
 
 COPY go.mod .
 COPY go.sum .
@@ -16,10 +16,6 @@ COPY . .
 
 RUN go build ./cmd/server/main.go
 
-WORKDIR /dist
-
-RUN cp /app/server/main .
-
 EXPOSE 4000
 
-CMD ["/dist/main"]
+CMD ["./main"]
