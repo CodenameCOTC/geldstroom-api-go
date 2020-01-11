@@ -10,6 +10,7 @@ import (
 	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/novaladip/geldstroom-api-go/core/middleware"
 	"github.com/novaladip/geldstroom-api-go/core/transaction"
 	"github.com/novaladip/geldstroom-api-go/core/user"
 	"github.com/novaladip/geldstroom-api-go/pkg/config"
@@ -53,6 +54,7 @@ func main() {
 
 func buildHanlder(db *sql.DB, key *config.Key) http.Handler {
 	router := gin.Default()
+	router.Use(middleware.SecureHeader())
 
 	user.RegisterHandler(router,
 		user.NewService(user.NewRepository(db)),
